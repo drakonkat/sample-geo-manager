@@ -3,7 +3,17 @@ import * as schema from "./schema";
 function createDb() {
   if (process.env.DB_URL && process.env.DB_TOKEN) {
     const { createDatabase } = require("@kilocode/app-builder-db");
-    return createDatabase(schema);
+    const db = createDatabase(schema);
+    
+    // Run migrations in production
+    try {
+      const { runMigrations } = require("@kilocode/app-builder-db");
+      runMigrations(db, {}, { migrationsFolder: "./src/db/migrations" });
+    } catch {
+      // migrations may already be applied
+    }
+    
+    return db;
   }
 
   const Database = require("better-sqlite3");

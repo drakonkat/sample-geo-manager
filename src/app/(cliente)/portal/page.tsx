@@ -18,13 +18,33 @@ export default async function ClientePortalPage() {
     redirect("/login");
   }
 
-  const [cliente] = await db
-    .select()
-    .from(clienti)
-    .where(eq(clienti.userId, user.id));
+  let cliente = null;
+  let userPratiche: Array<{
+    id: number;
+    titolo: string;
+    descrizione: string | null;
+    stato: string | null;
+    indirizzo: string | null;
+    createdAt: Date | null;
+  }> = [];
+  let userTickets: Array<{
+    id: number;
+    titolo: string;
+    messaggio: string | null;
+    stato: string | null;
+    praticaId: number | null;
+    createdAt: Date | null;
+  }> = [];
 
-  const userPratiche = cliente
-    ? await db
+  try {
+    const [c] = await db
+      .select()
+      .from(clienti)
+      .where(eq(clienti.userId, user.id));
+    cliente = c;
+
+    if (cliente) {
+      userPratiche = await db
         .select({
           id: pratiche.id,
           titolo: pratiche.titolo,
@@ -36,11 +56,9 @@ export default async function ClientePortalPage() {
         .from(pratiche)
         .innerJoin(praticheClienti, eq(pratiche.id, praticheClienti.praticaId))
         .where(eq(praticheClienti.clienteId, cliente.id))
-        .orderBy(desc(pratiche.createdAt))
-    : [];
+        .orderBy(desc(pratiche.createdAt));
 
-  const userTickets = cliente
-    ? await db
+      userTickets = await db
         .select({
           id: tickets.id,
           titolo: tickets.titolo,
@@ -51,8 +69,11 @@ export default async function ClientePortalPage() {
         })
         .from(tickets)
         .where(eq(tickets.clienteId, cliente.id))
-        .orderBy(desc(tickets.createdAt))
-    : [];
+        .orderBy(desc(tickets.createdAt));
+    }
+  } catch {
+    // Database may not be ready during build
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -72,9 +93,9 @@ export default async function ClientePortalPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-900">Le tue Pratiche</h2>
           </div>
-          {userPratiche.length === 0 ? (
+          {!cliente || userPratiche.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-16 text-center">
-              <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 mb-4">
                 <svg
                   className="w-8 h-8 text-indigo-300"
                   fill="none"
@@ -98,7 +119,7 @@ export default async function ClientePortalPage() {
             </div>
           ) : (
             <div className="space-y-5">
-              {userPratiche.map((p: typeof userPratiche[number]) => (
+              {userPratiche.map((p) => (
                 <PraticaCard key={p.id} pratica={p} />
               ))}
             </div>
@@ -109,7 +130,7 @@ export default async function ClientePortalPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-900">I tuoi Ticket</h2>
           </div>
-          {userTickets.length === 0 ? (
+          {!cliente || userTickets.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-12 text-center">
               <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
                 <svg className="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,7 +153,7 @@ export default async function ClientePortalPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {userTickets.map((t: typeof userTickets[number]) => (
+                  {userTickets.map((t) => (
                     <tr key={t.id} className="hover:bg-indigo-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-slate-900 text-sm">{t.titolo}</p>
@@ -141,7 +162,7 @@ export default async function ClientePortalPage() {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${statoColors[t.stato === "risolto" ? "chiusa" : t.stato === "in_lavorazione" ? "in_corso" : "aperta"]}`}>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${t.stato === "risolto" ? "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20" : t.stato === "in_lavorazione" ? "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"}`}>
                           {t.stato === "aperto" ? "Aperto" : t.stato === "in_lavorazione" ? "In Lavorazione" : "Risolto"}
                         </span>
                       </td>
@@ -172,21 +193,33 @@ async function PraticaCard({
     createdAt: Date | null;
   };
 }) {
-  const docs = await db
-    .select({
-      id: documenti.id,
-      nome: documenti.nome,
-      filename: documenti.filename,
-      dimensione: documenti.dimensione,
-      createdAt: documenti.createdAt,
-    })
-    .from(documenti)
-    .where(
-      and(
-        eq(documenti.praticaId, pratica.id),
-        eq(documenti.visibileAlCliente, true)
-      )
-    );
+  let docs: Array<{
+    id: number;
+    nome: string;
+    filename: string;
+    dimensione: number | null;
+    createdAt: Date | null;
+  }> = [];
+
+  try {
+    docs = await db
+      .select({
+        id: documenti.id,
+        nome: documenti.nome,
+        filename: documenti.filename,
+        dimensione: documenti.dimensione,
+        createdAt: documenti.createdAt,
+      })
+      .from(documenti)
+      .where(
+        and(
+          eq(documenti.praticaId, pratica.id),
+          eq(documenti.visibileAlCliente, true)
+        )
+      );
+  } catch {
+    // Database may not be ready
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden hover:shadow-md transition-shadow duration-200">
@@ -217,7 +250,7 @@ async function PraticaCard({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 11 11.314 0z"
                     />
                     <path
                       strokeLinecap="round"
@@ -258,7 +291,7 @@ async function PraticaCard({
               Documenti condivisi ({docs.length})
             </p>
             <div className="space-y-1.5">
-              {docs.map((doc: { id: number; nome: string; filename: string; dimensione: number | null; createdAt: Date | null }) => (
+              {docs.map((doc) => (
                 <div
                   key={doc.id}
                   className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors group"

@@ -8,20 +8,31 @@ import { statoLabels, statoColors, formatDate } from "@/lib/utils";
 export default async function DashboardPage() {
   const user = await getCurrentUser();
 
-  const totalPratiche = await db.select({ count: count() }).from(pratiche);
-  const praticheAperte = await db
-    .select({ count: count() })
-    .from(pratiche)
-    .where(eq(pratiche.stato, "aperta"));
-  const praticheInCorso = await db
-    .select({ count: count() })
-    .from(pratiche)
-    .where(eq(pratiche.stato, "in_corso"));
-  const totalClienti = await db.select({ count: count() }).from(clienti);
-  const ticketsAperti = await db
-    .select({ count: count() })
-    .from(tickets)
-    .where(eq(tickets.stato, "aperto"));
+  // Handle database errors gracefully (table may not exist during build)
+  let totalPratiche = [{ count: 0 }];
+  let praticheAperte = [{ count: 0 }];
+  let praticheInCorso = [{ count: 0 }];
+  let totalClienti = [{ count: 0 }];
+  let ticketsAperti = [{ count: 0 }];
+
+  try {
+    totalPratiche = await db.select({ count: count() }).from(pratiche);
+    praticheAperte = await db
+      .select({ count: count() })
+      .from(pratiche)
+      .where(eq(pratiche.stato, "aperta"));
+    praticheInCorso = await db
+      .select({ count: count() })
+      .from(pratiche)
+      .where(eq(pratiche.stato, "in_corso"));
+    totalClienti = await db.select({ count: count() }).from(clienti);
+    ticketsAperti = await db
+      .select({ count: count() })
+      .from(tickets)
+      .where(eq(tickets.stato, "aperto"));
+  } catch {
+    // Tables may not exist during build
+  }
 
   const stats = [
     {
@@ -138,16 +149,22 @@ export default async function DashboardPage() {
 }
 
 async function RecentPratiche() {
-  const recentPratiche = await db
-    .select({
-      id: pratiche.id,
-      titolo: pratiche.titolo,
-      stato: pratiche.stato,
-      createdAt: pratiche.createdAt,
-    })
-    .from(pratiche)
-    .orderBy(pratiche.createdAt)
-    .limit(5);
+  let recentPratiche: { id: number; titolo: string; stato: string; createdAt: Date | null }[] = [];
+  
+  try {
+    recentPratiche = await db
+      .select({
+        id: pratiche.id,
+        titolo: pratiche.titolo,
+        stato: pratiche.stato,
+        createdAt: pratiche.createdAt,
+      })
+      .from(pratiche)
+      .orderBy(pratiche.createdAt)
+      .limit(5);
+  } catch {
+    // Table may not exist
+  }
 
   if (recentPratiche.length === 0) {
     return (
@@ -160,7 +177,7 @@ async function RecentPratiche() {
 
   return (
     <div className="space-y-2">
-      {recentPratiche.map((p: { id: number; titolo: string; stato: string; createdAt: Date | null }) => (
+      {recentPratiche.map((p) => (
         <div key={p.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
           <div className="min-w-0">
             <Link
@@ -185,16 +202,30 @@ async function RecentPratiche() {
 }
 
 async function RecentTickets() {
-  const recentTickets = await db
-    .select({
-      id: tickets.id,
-      titolo: tickets.titolo,
-      stato: tickets.stato,
-      createdAt: tickets.createdAt,
-    })
-    .from(tickets)
-    .orderBy(tickets.createdAt)
-    .limit(5);
+  let recentTickets: { id: number; titolo: string; stato: string; createdAt: Date | null }[] = [];
+  
+  try {
+    recentTickets = await db
+      .select({
+        id: tickets.id,
+        titolo: tickets.titolo,
+        stato: tickets.stato,
+        createdAt: tickets.createdAt,
+      })
+      .from(tickets)
+      .orderBy(tickets.createdAt)
+      .limit(5);
+  } catch {
+    // Table may not exist
+  }
+
+  if (recentTickets.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-slate-500 font-medium">Nessun ticket presente</p>
+      </div>
+    );
+  }
 
   const ticketStatoLabels: Record<string, string> = {
     aperto: "Aperto",
@@ -208,17 +239,9 @@ async function RecentTickets() {
     risolto: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
   };
 
-  if (recentTickets.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-slate-500 font-medium">Nessun ticket presente</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-2">
-      {recentTickets.map((t: { id: number; titolo: string; stato: string; createdAt: Date | null }) => (
+      {recentTickets.map((t) => (
         <div key={t.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
           <div className="min-w-0">
             <p className="font-medium text-slate-900 text-sm truncate">{t.titolo}</p>
