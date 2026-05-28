@@ -1,44 +1,35 @@
-# Product Context: Next.js Starter Template
+# Product Context: GeoGest - Gestionale Geometri
 
-## Why This Template Exists
+## Why This Exists
 
-Starting a new Next.js project involves boilerplate setup, configuration decisions, and establishing patterns. This template provides a clean, opinionated starting point that eliminates setup friction and establishes best practices from the start. It's optimized for AI-assisted development, where an AI can quickly extend the template based on user requirements.
+Surveying firms (studi di geometri) need to manage multiple practices/cases simultaneously, share documents with clients, and coordinate work across team members. Traditional tools (spreadsheets, email) lack structure, access control, and traceability. GeoGest provides a centralized web platform for managing the entire workflow.
 
 ## Problems It Solves
 
-1. **Setup Time**: Eliminates boilerplate configuration (TypeScript, Tailwind, ESLint)
-2. **Decision Fatigue**: Pre-made choices for tooling and patterns
-3. **AI Context**: Memory bank provides persistent context for AI assistants
-4. **Extensibility**: Recipe system for adding common features
-5. **Consistency**: Standardized project structure and conventions
+1. **Practice Tracking**: No more lost paperwork — all pratiche tracked with status, dates, cadastral data
+2. **Document Sharing**: Upload and share documents with clients, controlling what they can see
+3. **Client Management**: Centralized client registry linked to practices
+4. **Access Control**: Role-based access ensures clients only see their own data
+5. **Team Coordination**: Admins and geometri can see all practices, assign work, track progress
 
-## How It Should Work (User Flow)
+## User Flows
 
-1. User starts with this template
-2. User describes what they want to build to AI assistant
-3. AI adds pages, components, and features as needed
-4. AI uses recipes for common additions (database, auth)
-5. User previews changes via hot reload
-6. Iterate until satisfied
-7. Deploy
+### Geometra/Admin Flow
+1. Login → Dashboard (stats overview)
+2. Create/manage pratiche with cadastral data (foglio, particella, sub)
+3. Upload documents to practices, toggle visibility for clients
+4. Manage client registry
+5. Admin: manage users and roles
 
-## Key User Experience Goals
+### Client Flow
+1. Login → Portal (list of assigned practices)
+2. View practice details and shared documents
+3. Download shared documents
 
-- **Zero to Feature Fast**: Get building immediately, no setup required
-- **AI-Friendly**: Memory bank and recipes make AI assistance effective
-- **Flexible Foundation**: Can become any type of application
-- **Best Practices Built-In**: TypeScript strict mode, ESLint, clean structure
+## Key UX Goals
 
-## What This Template Provides
-
-1. **Clean App Structure**: Single page ready for expansion
-2. **Type Safety**: Full TypeScript setup with strict mode
-3. **Modern Styling**: Tailwind CSS 4 ready to use
-4. **Code Quality**: ESLint configured
-5. **Extensibility**: Recipe system for common features
-
-## Integration Points
-
-- **Database**: Use add-database recipe for Drizzle + SQLite
-- **Styling**: Tailwind CSS pre-configured
-- **AI Assistance**: Memory bank for context persistence
+- **Clean, professional UI** — appropriate for a technical/surveying context
+- **Fast data entry** — minimal clicks to create practices and upload documents
+- **Clear status tracking** — visual badges for practice states (aperta, in corso, sospesa, chiusa)
+- **Mobile-friendly portal** — clients may access from mobile devices
+- **Italian language** — all UI text in Italian for the target market

@@ -1,4 +1,4 @@
-# Technical Context: Next.js Starter Template
+# Technical Context: GeoGest - Gestionale Geometri
 
 ## Technology Stack
 
@@ -9,135 +9,73 @@
 | TypeScript   | 5.9.x   | Type-safe JavaScript            |
 | Tailwind CSS | 4.x     | Utility-first CSS               |
 | Bun          | Latest  | Package manager & runtime       |
+| Drizzle ORM  | 0.45.x  | Database ORM for SQLite         |
+| bcryptjs     | 3.x     | Password hashing                |
+| uuid         | 14.x    | Session ID generation           |
+| clsx         | 2.x     | Conditional class names         |
 
-## Development Environment
+## Development Commands
 
-### Prerequisites
-
-- Bun installed (`curl -fsSL https://bun.sh/install | bash`)
-- Node.js 20+ (for compatibility)
-
-### Commands
-
-```bash
-bun install        # Install dependencies
-bun dev            # Start dev server (http://localhost:3000)
-bun build          # Production build
-bun start          # Start production server
-bun lint           # Run ESLint
-bun typecheck      # Run TypeScript type checking
-```
+| Command | Purpose |
+|---------|---------|
+| `bun install` | Install dependencies |
+| `bun build` | Production build |
+| `bun lint` | Run ESLint |
+| `bun typecheck` | Run TypeScript type checking |
+| `bun db:generate` | Generate Drizzle migrations |
+| `bun db:migrate` | Run migrations (local only) |
 
 ## Project Configuration
 
-### Next.js Config (`next.config.ts`)
+### Next.js Config
+- `output: "standalone"` for Docker deployment
 
-- App Router enabled
-- Default settings for flexibility
+### Database
+- SQLite via Drizzle ORM
+- Uses `@kilocode/app-builder-db` for sandbox database
+- Schema: users, sessions, clienti, pratiche, documenti
+- Migrations auto-run in sandbox after push
 
-### TypeScript Config (`tsconfig.json`)
-
-- Strict mode enabled
-- Path alias: `@/*` → `src/*`
-- Target: ESNext
-
-### Tailwind CSS 4 (`postcss.config.mjs`)
-
-- Uses `@tailwindcss/postcss` plugin
-- CSS-first configuration (v4 style)
-
-### ESLint (`eslint.config.mjs`)
-
-- Uses `eslint-config-next`
-- Flat config format
-
-## Key Dependencies
-
-### Production Dependencies
-
-```json
-{
-  "next": "^16.1.3", // Framework
-  "react": "^19.2.3", // UI library
-  "react-dom": "^19.2.3" // React DOM
-}
-```
-
-### Dev Dependencies
-
-```json
-{
-  "typescript": "^5.9.3",
-  "@types/node": "^24.10.2",
-  "@types/react": "^19.2.7",
-  "@types/react-dom": "^19.2.3",
-  "@tailwindcss/postcss": "^4.1.17",
-  "tailwindcss": "^4.1.17",
-  "eslint": "^9.39.1",
-  "eslint-config-next": "^16.0.0"
-}
-```
+### Authentication
+- Cookie-based sessions (httpOnly, secure in production)
+- Session duration: 7 days
+- bcryptjs for password hashing (12 rounds)
 
 ## File Structure
 
 ```
 /
-├── .gitignore              # Git ignore rules
-├── package.json            # Dependencies and scripts
-├── bun.lock                # Bun lockfile
-├── next.config.ts          # Next.js configuration
-├── tsconfig.json           # TypeScript configuration
-├── postcss.config.mjs      # PostCSS (Tailwind) config
-├── eslint.config.mjs       # ESLint configuration
-├── public/                 # Static assets
-│   └── .gitkeep
-└── src/                    # Source code
-    └── app/                # Next.js App Router
-        ├── layout.tsx      # Root layout
-        ├── page.tsx        # Home page
-        ├── globals.css     # Global styles
-        └── favicon.ico     # Site icon
+├── .dockerignore
+├── .gitignore
+├── Dockerfile              # Multi-stage Bun build for Coolify
+├── drizzle.config.ts
+├── package.json
+├── next.config.ts          # standalone output
+├── tsconfig.json
+├── postcss.config.mjs
+├── eslint.config.mjs
+├── public/
+│   └── uploads/            # User-uploaded files (persistent volume needed)
+├── src/
+│   ├── app/                # Next.js App Router pages + API
+│   ├── components/         # React components
+│   ├── lib/                # Utilities
+│   ├── db/                 # Database schema + migrations
+│   └── middleware.ts       # Auth routing
+└── .kilocode/              # AI context & recipes
 ```
-
-## Technical Constraints
-
-### Starting Point
-
-- Minimal structure - expand as needed
-- No database by default (use recipe to add)
-- No authentication by default (add when needed)
-
-### Browser Support
-
-- Modern browsers (ES2020+)
-- No IE11 support
-
-## Performance Considerations
-
-### Image Optimization
-
-- Use Next.js `Image` component for optimization
-- Place images in `public/` directory
-
-### Bundle Size
-
-- Tree-shaking enabled by default
-- Tailwind CSS purges unused styles
-
-### Core Web Vitals
-
-- Server Components reduce client JavaScript
-- Streaming and Suspense for better UX
 
 ## Deployment
 
-### Build Output
-
-- Server-rendered pages by default
-- Can be configured for static export
+### Dockerfile (Coolify)
+- Base: `oven/bun:1`
+- Multi-stage build (deps → build → run)
+- Standalone Next.js output
+- Runs as non-root user (nextjs:nodejs)
+- Requires persistent volume for `public/uploads/`
+- Environment: `NODE_ENV=production`, `PORT=3000`
 
 ### Environment Variables
-
-- None required for base template
-- Add as needed for features
-- Use `.env.local` for local development
+- `DB_URL`, `DB_TOKEN` — auto-provided by sandbox
+- `NODE_ENV` — set to `production` in Dockerfile
+- No additional env vars required for base functionality

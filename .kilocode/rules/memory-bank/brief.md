@@ -1,48 +1,55 @@
-# Project Brief: Next.js Starter Template
+# Project Brief: GeoGest - Gestionale Geometri
 
 ## Purpose
 
-This is a minimal Next.js starter template designed for AI-assisted development. It provides a clean foundation that can be extended to build any type of web application through interaction with an AI assistant.
+A web-based management system for surveying firms (studi di geometri) that enables practice/case management, document sharing with clients, and team coordination through role-based access control.
 
 ## Target Users
 
-- Developers wanting a clean Next.js starting point
-- Users building applications through AI-assisted coding
-- Teams needing a standardized, modern Next.js setup
+- **Admin**: Firm owners/managers who need full control over users and practices
+- **Geometri**: Surveyors who manage their assigned practices and upload documents
+- **Clienti**: End clients who need to view their practices and download shared documents
 
 ## Core Use Case
 
-Users describe what they want to build to an AI assistant, which then expands this template by:
-
-1. Adding components and pages as needed
-2. Installing additional dependencies
-3. Setting up databases, authentication, etc. using recipes
-4. Customizing styling and branding
+A surveying firm uses GeoGest to:
+1. Track all active practices with cadastral data (foglio, particella, sub)
+2. Upload and organize documents per practice
+3. Share specific documents with clients through a dedicated portal
+4. Manage client registry and link clients to practices
+5. Monitor practice status and workload via dashboard
 
 ## Key Requirements
 
 ### Must Have
 
-- Modern Next.js 16 setup with App Router
-- TypeScript for type safety
-- Tailwind CSS 4 for styling
-- ESLint for code quality
-- Clean, minimal starting structure
-- Bun as package manager
+- Multi-user authentication with roles (admin, geometra, cliente)
+- Practice management (CRUD, status tracking, cadastral fields)
+- Document upload/download with per-document client visibility control
+- Client registry management
+- Dedicated client portal with limited, read-only access
+- Dashboard with practice statistics
+- Docker deployment support (Coolify)
 
 ### Nice to Have
 
-- Recipe system for common additions (database, auth)
-- Memory bank for AI context persistence
-- Clear development guidelines
+- Email notifications for new documents
+- Document categories/tags
+- Activity logging
+- Search and pagination
+- Backup system
 
 ## Success Metrics
 
-- Clean, zero-error TypeScript setup
-- Passing lint and type checks
+- Clean typecheck and lint (✅ achieved)
+- All three user roles can perform their intended workflows
+- Docker build succeeds for Coolify deployment
+- Responsive UI that works on desktop and mobile (client portal)
 
 ## Constraints
 
-- Minimal dependencies by default
 - Framework: Next.js 16 + React 19 + Tailwind CSS 4
+- Database: SQLite via Drizzle ORM
 - Package manager: Bun
+- Language: Italian UI
+- Deployment: Docker (Coolify)

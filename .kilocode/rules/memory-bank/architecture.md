@@ -1,120 +1,96 @@
-# System Patterns: Next.js Starter Template
+# System Patterns: GeoGest - Gestionale Geometri
 
 ## Architecture Overview
 
 ```
 src/
-├── app/                    # Next.js App Router
-│   ├── layout.tsx          # Root layout + metadata
-│   ├── page.tsx            # Home page
-│   ├── globals.css         # Tailwind imports + global styles
-│   └── favicon.ico         # Site icon
-└── (expand as needed)
-    ├── components/         # React components (add when needed)
-    ├── lib/                # Utilities and helpers (add when needed)
-    └── db/                 # Database files (add via recipe)
+├── app/
+│   ├── layout.tsx                  # Root layout (Inter font, Italian lang)
+│   ├── page.tsx                    # Redirect to login/dashboard/portal
+│   ├── globals.css                 # Tailwind imports
+│   ├── login/page.tsx              # Login page (client component)
+│   ├── register/page.tsx           # Registration page (client component)
+│   ├── middleware.ts               # Auth-based routing middleware
+│   ├── (dashboard)/                # Admin/Geometra area (protected layout)
+│   │   ├── layout.tsx              # Sidebar + Header layout
+│   │   ├── dashboard/page.tsx      # Stats overview (server component)
+│   │   ├── pratiche/
+│   │   │   ├── page.tsx            # List with filters (client component)
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx        # Detail (server component)
+│   │   │       └── PraticaDetailClient.tsx  # Interactive detail (client)
+│   │   ├── clienti/page.tsx        # Clienti list (client component)
+│   │   ├── utenti/page.tsx         # Users list - admin only (client)
+│   │   └── mio-account/
+│   │       ├── page.tsx            # Account info (server component)
+│   │       └── AccountForm.tsx     # Edit form (client component)
+│   ├── (cliente)/                  # Client portal area (protected layout)
+│   │   ├── layout.tsx              # Minimal layout
+│   │   └── portal/
+│   │       ├── page.tsx            # Portal home (server component)
+│   │       ├── ClientePortalHeader.tsx  # Header (client component)
+│   │       └── pratiche/[id]/page.tsx   # Practice detail (server)
+│   └── api/
+│       ├── auth/
+│       │   ├── login/route.ts      # POST login
+│       │   ├── register/route.ts   # POST register
+│       │   ├── logout/route.ts     # POST logout
+│       │   └── update-profile/route.ts  # POST update profile
+│       ├── pratiche/
+│       │   ├── route.ts            # GET list, POST create
+│       │   └── [id]/route.ts       # PATCH update, DELETE
+│       ├── clienti/route.ts        # GET list, POST create
+│       ├── utenti/route.ts         # GET list (admin only)
+│       ├── documenti/route.ts      # DELETE
+│       └── upload/route.ts         # POST file upload
+├── components/
+│   ├── ui/
+│   │   ├── Button.tsx              # Variants: primary, secondary, danger, ghost
+│   │   ├── Card.tsx                # Card, CardHeader, CardContent
+│   │   ├── Input.tsx               # With label and error support
+│   │   ├── Select.tsx              # With label and options
+│   │   └── Badge.tsx               # Status badges
+│   ├── layout/
+│   │   ├── Sidebar.tsx             # Role-based navigation (client)
+│   │   └── Header.tsx              # User info + logout (client)
+│   └── FileUpload.tsx              # Drag & drop upload (client)
+├── lib/
+│   ├── auth.ts                     # Session management, password hashing
+│   └── utils.ts                    # Formatting, labels, colors
+└── db/
+    ├── schema.ts                   # Drizzle ORM table definitions
+    ├── index.ts                    # Database client
+    ├── migrate.ts                  # Migration runner
+    └── migrations/                 # Auto-generated SQL migrations
 ```
 
 ## Key Design Patterns
 
-### 1. App Router Pattern
+### 1. Server/Client Component Split
+- **Server Components** for data fetching (dashboard, detail pages)
+- **Client Components** for interactive UI (forms, file upload, navigation)
+- Forms post to API routes, not server actions
 
-Uses Next.js App Router with file-based routing:
-```
-src/app/
-├── page.tsx           # Route: /
-├── about/page.tsx     # Route: /about
-├── blog/
-│   ├── page.tsx       # Route: /blog
-│   └── [slug]/page.tsx # Route: /blog/:slug
-└── api/
-    └── route.ts       # API Route: /api
-```
+### 2. Authentication Pattern
+- Cookie-based sessions stored in `sessions` table
+- `getCurrentUser()` reads session cookie → looks up session → returns user
+- Middleware redirects unauthenticated users to `/login`
+- Layout-level auth checks redirect unauthorized roles
 
-### 2. Component Organization Pattern (When Expanding)
+### 3. Role-Based Access
+- Three roles: `admin`, `geometra`, `cliente`
+- Dashboard area: admin + geometra only
+- Portal area: cliente only
+- Sidebar nav items filtered by role
+- API routes check role before processing
 
-```
-src/components/
-├── ui/                # Reusable UI components (Button, Card, etc.)
-├── layout/            # Layout components (Header, Footer)
-├── sections/          # Page sections (Hero, Features, etc.)
-└── forms/             # Form components
-```
+### 4. File Upload Pattern
+- Files uploaded via FormData to `/api/upload`
+- Stored in `public/uploads/` with randomized filenames
+- Document metadata stored in DB with `visibileAlCliente` toggle
+- Clients only see documents marked as visible
 
-### 3. Server Components by Default
-
-All components are Server Components unless marked with `"use client"`:
-```tsx
-// Server Component (default) - can fetch data, access DB
-export default function Page() {
-  return <div>Server rendered</div>;
-}
-
-// Client Component - for interactivity
-"use client";
-export default function Counter() {
-  const [count, setCount] = useState(0);
-  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
-}
-```
-
-### 4. Layout Pattern
-
-Layouts wrap pages and can be nested:
-```tsx
-// src/app/layout.tsx - Root layout
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
-
-// src/app/dashboard/layout.tsx - Nested layout
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex">
-      <Sidebar />
-      <main>{children}</main>
-    </div>
-  );
-}
-```
-
-## Styling Conventions
-
-### Tailwind CSS Usage
-- Utility classes directly on elements
-- Component composition for repeated patterns
-- Responsive: `sm:`, `md:`, `lg:`, `xl:`
-
-### Common Patterns
-```tsx
-// Container
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-// Responsive grid
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-// Flexbox centering
-<div className="flex items-center justify-center">
-```
-
-## File Naming Conventions
-
-- Components: PascalCase (`Button.tsx`, `Header.tsx`)
-- Utilities: camelCase (`utils.ts`, `helpers.ts`)
-- Pages/Routes: lowercase (`page.tsx`, `layout.tsx`)
-- Directories: kebab-case (`api-routes/`) or lowercase (`components/`)
-
-## State Management
-
-For simple needs:
-- `useState` for local component state
-- `useContext` for shared state
-- Server Components for data fetching
-
-For complex needs (add when necessary):
-- Zustand for client state
-- React Query for server state
+### 5. Styling
+- Tailwind CSS 4 utility classes
+- Consistent color scheme: blue-600 primary, gray-900 sidebar
+- Status badges with semantic colors (blue=open, yellow=active, green=closed)
