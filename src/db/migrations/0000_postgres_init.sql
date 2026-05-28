@@ -1,0 +1,72 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(20) NOT NULL DEFAULT 'cliente',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  id VARCHAR(255) PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS clienti (
+  id SERIAL PRIMARY KEY,
+  nome VARCHAR(255) NOT NULL,
+  cognome VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  telefono VARCHAR(50),
+  indirizzo VARCHAR(500),
+  codice_fiscale VARCHAR(20),
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS pratiche (
+  id SERIAL PRIMARY KEY,
+  titolo VARCHAR(255) NOT NULL,
+  descrizione TEXT,
+  stato VARCHAR(20) NOT NULL DEFAULT 'aperta',
+  indirizzo VARCHAR(500),
+  foglio VARCHAR(50),
+  particella VARCHAR(50),
+  sub VARCHAR(50),
+  cliente_id INTEGER REFERENCES clienti(id) ON DELETE SET NULL,
+  geometra_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS pratiche_clienti (
+  id SERIAL PRIMARY KEY,
+  pratica_id INTEGER NOT NULL REFERENCES pratiche(id) ON DELETE CASCADE,
+  cliente_id INTEGER NOT NULL REFERENCES clienti(id) ON DELETE CASCADE,
+  UNIQUE(pratica_id, cliente_id)
+);
+
+CREATE TABLE IF NOT EXISTS documenti (
+  id SERIAL PRIMARY KEY,
+  nome VARCHAR(255) NOT NULL,
+  filename VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(100),
+  dimensione INTEGER,
+  pratica_id INTEGER NOT NULL REFERENCES pratiche(id) ON DELETE CASCADE,
+  caricato_da INTEGER NOT NULL REFERENCES users(id),
+  visibile_al_cliente BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS tickets (
+  id SERIAL PRIMARY KEY,
+  titolo VARCHAR(255) NOT NULL,
+  messaggio TEXT,
+  stato VARCHAR(20) NOT NULL DEFAULT 'aperto',
+  pratica_id INTEGER REFERENCES pratiche(id) ON DELETE SET NULL,
+  cliente_id INTEGER NOT NULL REFERENCES clienti(id) ON DELETE CASCADE,
+  geometra_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
