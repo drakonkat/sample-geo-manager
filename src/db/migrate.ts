@@ -1,8 +1,8 @@
 import * as schema from "./schema";
 
 if (!process.env.DB_URL || !process.env.DB_TOKEN) {
-  console.error("Database environment variables not set");
-  process.exit(1);
+  console.log("Database environment variables not set, skipping migrations");
+  process.exit(0);
 }
 
 const { createDatabase, runMigrations } = require("@kilocode/app-builder-db");
