@@ -78,6 +78,13 @@ GeoGest is a web-based management system for surveying firms (studi di geometri)
 - [ ] Backup system
 - [ ] Fix ESLint compatibility (pre-existing issue with @rushstack/eslint-patch)
 
+## Production Fixes (2026-05-28)
+
+- Fixed "Failed query: select count(*) from tickets" error during build
+- Added try/catch around DB queries in dashboard/page.tsx and portal/page.tsx for production build
+- Added migrations run in production mode (DB_URL/DB_TOKEN) in db/index.ts
+- Added `output: "standalone"` to next.config.ts for Docker deployment
+
 ## Session History
 
 | Date | Changes |
