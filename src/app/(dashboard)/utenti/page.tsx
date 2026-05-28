@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { roleLabels, formatDate } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 
 interface User {
   id: number;
@@ -14,6 +15,10 @@ interface User {
 export default function UtentiPage() {
   const [utenti, setUtenti] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "geometra" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -23,10 +28,37 @@ export default function UtentiPage() {
         if (!cancelled && data) setUtenti(data);
         if (!cancelled) setLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSaving(true);
+
+    try {
+      const res = await fetch("/api/utenti", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Errore durante la creazione");
+        return;
+      }
+
+      const newUser = await res.json();
+      setUtenti((prev) => [newUser, ...prev]);
+      setForm({ name: "", email: "", password: "", role: "geometra" });
+      setShowForm(false);
+    } catch {
+      setError("Errore di connessione");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const roleColors: Record<string, string> = {
     admin: "bg-indigo-100 text-indigo-700 ring-indigo-600/20",
@@ -51,9 +83,98 @@ export default function UtentiPage() {
             Gestisci gli utenti del sistema
           </p>
         </div>
-        <div className="text-sm text-slate-400 font-medium">
-          {utenti.length} {utenti.length === 1 ? "utente" : "utenti"}
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 rounded-xl shadow-sm hover:from-indigo-700 hover:to-indigo-600 transition-all cursor-pointer"
+        >
+          {showForm ? (
+            "Annulla"
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Nuovo Utente
+            </>
+          )}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
+          <h2 className="text-lg font-semibold text-slate-900 mb-6">Crea Nuovo Utente</h2>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleCreate} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Nome *</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                  placeholder="Mario Rossi"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Email *</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                  placeholder="email@esempio.it"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Password *</label>
+                <input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  required
+                  minLength={6}
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                  placeholder="Min. 6 caratteri"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Ruolo</label>
+                <select
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                  className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                >
+                  <option value="geometra">Geometra</option>
+                  <option value="admin">Amministratore</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" loading={saving} className="bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 rounded-xl px-6">
+                Crea Utente
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => { setShowForm(false); setError(""); }}
+                className="rounded-xl"
+              >
+                Annulla
+              </Button>
+            </div>
+          </form>
         </div>
+      )}
+
+      <div className="text-sm text-slate-400 font-medium">
+        {utenti.length} {utenti.length === 1 ? "utente" : "utenti"}
       </div>
 
       {loading ? (
@@ -66,18 +187,8 @@ export default function UtentiPage() {
       ) : utenti.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-16 text-center">
           <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-slate-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-              />
+            <svg className="w-8 h-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
           <p className="text-slate-500 font-medium">Nessun utente presente</p>

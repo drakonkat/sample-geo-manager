@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { pratiche, clienti, documenti, users } from "@/db/schema";
-import { eq, count, and } from "drizzle-orm";
+import { pratiche, clienti, tickets } from "@/db/schema";
+import { eq, count } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 import { statoLabels, statoColors, formatDate } from "@/lib/utils";
@@ -18,20 +18,10 @@ export default async function DashboardPage() {
     .from(pratiche)
     .where(eq(pratiche.stato, "in_corso"));
   const totalClienti = await db.select({ count: count() }).from(clienti);
-
-  const recentPratiche = await db
-    .select({
-      id: pratiche.id,
-      titolo: pratiche.titolo,
-      stato: pratiche.stato,
-      createdAt: pratiche.createdAt,
-      clienteNome: clienti.nome,
-      clienteCognome: clienti.cognome,
-    })
-    .from(pratiche)
-    .leftJoin(clienti, eq(pratiche.clienteId, clienti.id))
-    .orderBy(pratiche.createdAt)
-    .limit(5);
+  const ticketsAperti = await db
+    .select({ count: count() })
+    .from(tickets)
+    .where(eq(tickets.stato, "aperto"));
 
   const stats = [
     {
@@ -53,10 +43,10 @@ export default async function DashboardPage() {
       icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     },
     {
-      label: "Clienti",
-      value: totalClienti[0].count,
-      gradient: "from-violet-500 to-violet-600",
-      icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
+      label: "Ticket Aperti",
+      value: ticketsAperti[0].count,
+      gradient: "from-red-500 to-red-600",
+      icon: "M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z",
     },
   ];
 
@@ -112,95 +102,137 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h2 className="font-semibold text-slate-900">Ultime Pratiche</h2>
-          <Link
-            href="/pratiche"
-            className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
-          >
-            Vedi tutte →
-          </Link>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl shadow-sm">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+            <h2 className="font-semibold text-slate-900">Ultime Pratiche</h2>
+            <Link
+              href="/pratiche"
+              className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+            >
+              Vedi tutte →
+            </Link>
+          </div>
+          <div className="p-4">
+            <RecentPratiche />
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                <th className="px-6 py-3 first:rounded-tl-lg last:rounded-tr-lg">Pratica</th>
-                <th className="px-6 py-3">Cliente</th>
-                <th className="px-6 py-3">Stato</th>
-                <th className="px-6 py-3">Data</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {recentPratiche.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-16 text-center">
-                    <div className="flex flex-col items-center">
-                      <svg
-                        className="w-16 h-16 text-slate-200 mb-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <p className="text-slate-500 font-medium mb-1">
-                        Nessuna pratica presente
-                      </p>
-                      <p className="text-sm text-slate-400 mb-4">
-                        Inizia creando la tua prima pratica
-                      </p>
-                      <Link
-                        href="/pratiche"
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors"
-                      >
-                        Crea la prima →
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                recentPratiche.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="hover:bg-slate-50 transition-colors"
-                  >
-                    <td className="px-6 py-3.5">
-                      <Link
-                        href={`/pratiche/${p.id}`}
-                        className="font-medium text-slate-900 hover:text-indigo-600 transition-colors"
-                      >
-                        {p.titolo}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-3.5 text-sm text-slate-500">
-                      {p.clienteNome
-                        ? `${p.clienteNome} ${p.clienteCognome}`
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-3.5">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${statoColors[p.stato || "aperta"]}`}
-                      >
-                        {statoLabels[p.stato || "aperta"]}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5 text-sm text-slate-500">
-                      {p.createdAt ? formatDate(p.createdAt) : "—"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+
+        <div className="bg-white rounded-2xl shadow-sm">
+          <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+            <h2 className="font-semibold text-slate-900">Ticket Recenti</h2>
+            <Link
+              href="/tickets"
+              className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+            >
+              Vedi tutti →
+            </Link>
+          </div>
+          <div className="p-4">
+            <RecentTickets />
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+async function RecentPratiche() {
+  const recentPratiche = await db
+    .select({
+      id: pratiche.id,
+      titolo: pratiche.titolo,
+      stato: pratiche.stato,
+      createdAt: pratiche.createdAt,
+    })
+    .from(pratiche)
+    .orderBy(pratiche.createdAt)
+    .limit(5);
+
+  if (recentPratiche.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-slate-500 font-medium">Nessuna pratica presente</p>
+        <p className="text-sm text-slate-400 mt-1">Inizia creando la tua prima pratica</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {recentPratiche.map((p: { id: number; titolo: string; stato: string; createdAt: Date | null }) => (
+        <div key={p.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+          <div className="min-w-0">
+            <Link
+              href={`/pratiche/${p.id}`}
+              className="font-medium text-slate-900 hover:text-indigo-600 transition-colors text-sm"
+            >
+              {p.titolo}
+            </Link>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statoColors[p.stato || "aperta"]}`}>
+              {statoLabels[p.stato || "aperta"]}
+            </span>
+            <span className="text-xs text-slate-400">
+              {p.createdAt ? formatDate(p.createdAt) : "—"}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+async function RecentTickets() {
+  const recentTickets = await db
+    .select({
+      id: tickets.id,
+      titolo: tickets.titolo,
+      stato: tickets.stato,
+      createdAt: tickets.createdAt,
+    })
+    .from(tickets)
+    .orderBy(tickets.createdAt)
+    .limit(5);
+
+  const ticketStatoLabels: Record<string, string> = {
+    aperto: "Aperto",
+    in_lavorazione: "In Lavorazione",
+    risolto: "Risolto",
+  };
+
+  const ticketStatoColors: Record<string, string> = {
+    aperto: "bg-red-50 text-red-700 ring-1 ring-red-600/20",
+    in_lavorazione: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+    risolto: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
+  };
+
+  if (recentTickets.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-slate-500 font-medium">Nessun ticket presente</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {recentTickets.map((t: { id: number; titolo: string; stato: string; createdAt: Date | null }) => (
+        <div key={t.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+          <div className="min-w-0">
+            <p className="font-medium text-slate-900 text-sm truncate">{t.titolo}</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${ticketStatoColors[t.stato || "aperto"]}`}>
+              {ticketStatoLabels[t.stato || "aperto"]}
+            </span>
+            <span className="text-xs text-slate-400">
+              {t.createdAt ? formatDate(t.createdAt) : "—"}
+            </span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

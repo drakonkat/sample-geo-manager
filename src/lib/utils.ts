@@ -42,3 +42,15 @@ export const roleLabels: Record<string, string> = {
   geometra: "Geometra",
   cliente: "Cliente",
 };
+
+export const ticketStatoLabels: Record<string, string> = {
+  aperto: "Aperto",
+  in_lavorazione: "In Lavorazione",
+  risolto: "Risolto",
+};
+
+export const ticketStatoColors: Record<string, string> = {
+  aperto: "bg-red-50 text-red-700 ring-1 ring-red-600/20",
+  in_lavorazione: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+  risolto: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
+};

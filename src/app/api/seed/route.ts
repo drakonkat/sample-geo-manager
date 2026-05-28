@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { db } from "@/db";
-import { users, clienti, pratiche } from "@/db/schema";
+import { users, clienti, pratiche, praticheClienti, tickets } from "@/db/schema";
 
 export async function POST() {
   try {
@@ -75,8 +75,7 @@ export async function POST() {
     await db.insert(pratiche).values([
       {
         titolo: "Frazionamento Terreni Via Garibaldi",
-        descrizione:
-          "Frazionamento di terreni agricoli in Via Garibaldi 42, Milano. Richiesta di divisione particella in lotti edificabili.",
+        descrizione: "Frazionamento di terreni agricoli in Via Garibaldi 42, Milano.",
         stato: "aperta",
         indirizzo: "Via Garibaldi 42, Milano",
         foglio: "15",
@@ -86,8 +85,7 @@ export async function POST() {
       },
       {
         titolo: "Accatastamento Villa Signorile",
-        descrizione:
-          "Accatastamento di nuova costruzione - villa unifamiliare signorile con pertinenze e area verde.",
+        descrizione: "Accatastamento di nuova costruzione.",
         stato: "in_corso",
         indirizzo: "Via Mazzini 15, Roma",
         foglio: "8",
@@ -98,8 +96,7 @@ export async function POST() {
       },
       {
         titolo: "Variazione Catastale Corso Italia",
-        descrizione:
-          "Variazione catastale per ristrutturazione edilizia con cambio di destinazione d'uso da residenziale a commerciale.",
+        descrizione: "Variazione catastale per ristrutturazione edilizia.",
         stato: "in_corso",
         indirizzo: "Corso Italia 88, Napoli",
         foglio: "22",
@@ -109,8 +106,7 @@ export async function POST() {
       },
       {
         titolo: "Pratica di Successione",
-        descrizione:
-          "Successione catastale per trasferimento proprietà immobiliare Piazza Duomo 3, Firenze.",
+        descrizione: "Successione catastale per trasferimento proprietà immobiliare.",
         stato: "aperta",
         indirizzo: "Piazza Duomo 3, Firenze",
         foglio: "5",
@@ -120,8 +116,7 @@ export async function POST() {
       },
       {
         titolo: "Perizia di Stima Immobiliare",
-        descrizione:
-          "Perizia di stima per immobile residenziale in Via Veneto 100, Roma. Valutazione ai fini di compravendita.",
+        descrizione: "Perizia di stima per immobile residenziale.",
         stato: "sospesa",
         indirizzo: "Via Veneto 100, Roma",
         foglio: "12",
@@ -131,8 +126,7 @@ export async function POST() {
       },
       {
         titolo: "Confinamento e Mappatura",
-        descrizione:
-          "Rilievo topografico e definizione confini catastali per area residenziale in Via Toscana 7, Milano.",
+        descrizione: "Rilievo topografico e definizione confini catastali.",
         stato: "chiusa",
         indirizzo: "Via Toscana 7, Milano",
         foglio: "3",
@@ -142,10 +136,39 @@ export async function POST() {
       },
     ]);
 
+    await db.insert(praticheClienti).values([
+      { praticaId: 1, clienteId: 1 },
+      { praticaId: 2, clienteId: 2 },
+      { praticaId: 3, clienteId: 3 },
+      { praticaId: 4, clienteId: 4 },
+      { praticaId: 5, clienteId: 2 },
+      { praticaId: 6, clienteId: 1 },
+      { praticaId: 1, clienteId: 3 },
+    ]);
+
+    await db.insert(tickets).values([
+      {
+        titolo: "Documentazione mancante per frazionamento",
+        messaggio: "C'è bisogno della planimetria aggiornata per procedere con il frazionamento.",
+        stato: "aperto",
+        praticaId: 1,
+        clienteId: 1,
+        geometraId: 2,
+      },
+      {
+        titolo: "Richiesta info perizia",
+        messaggio: "Vorrei sapere quando sarà pronta la perizia di stima.",
+        stato: "in_lavorazione",
+        praticaId: 5,
+        clienteId: 2,
+        geometraId: 2,
+      },
+    ]);
+
     return NextResponse.json({
       success: true,
       message: "Database popolato con dati demo",
-      data: { users: 3, clienti: 4, pratiche: 6 },
+      data: { users: 3, clienti: 4, pratiche: 6, tickets: 2 },
     });
   } catch (error) {
     console.error("Seed error:", error);

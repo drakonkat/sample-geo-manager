@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { pratiche } from "@/db/schema";
+import { pratiche, praticheClienti } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -11,7 +11,7 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { id, stato, clienteId, titolo, descrizione, indirizzo } = body;
+  const { id, stato, clientiIds, titolo, descrizione, indirizzo } = body;
 
   if (!id) {
     return NextResponse.json({ error: "ID richiesto" }, { status: 400 });
@@ -19,12 +19,20 @@ export async function PATCH(request: Request) {
 
   const updates: Record<string, unknown> = { updatedAt: new Date() };
   if (stato) updates.stato = stato;
-  if (clienteId !== undefined) updates.clienteId = clienteId || null;
   if (titolo) updates.titolo = titolo;
   if (descrizione !== undefined) updates.descrizione = descrizione;
   if (indirizzo !== undefined) updates.indirizzo = indirizzo;
 
   await db.update(pratiche).set(updates).where(eq(pratiche.id, id));
+
+  if (Array.isArray(clientiIds)) {
+    await db.delete(praticheClienti).where(eq(praticheClienti.praticaId, id));
+    if (clientiIds.length > 0) {
+      await db.insert(praticheClienti).values(
+        clientiIds.map((cid: number) => ({ praticaId: id, clienteId: cid }))
+      );
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

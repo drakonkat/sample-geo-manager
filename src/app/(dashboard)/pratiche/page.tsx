@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { statoLabels, statoColors, formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
 
 interface Pratica {
   id: number;
@@ -12,8 +11,7 @@ interface Pratica {
   stato: string;
   indirizzo: string | null;
   createdAt: Date | null;
-  clienteNome: string | null;
-  clienteCognome: string | null;
+  clientiAssociati: { id: number; nome: string; cognome: string }[];
   geometraNome: string | null;
 }
 
@@ -22,6 +20,7 @@ export default function PratichePage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState("tutte");
+  const [allClienti, setAllClienti] = useState<{ id: number; nome: string; cognome: string }[]>([]);
   const [form, setForm] = useState({
     titolo: "",
     descrizione: "",
@@ -30,6 +29,7 @@ export default function PratichePage() {
     particella: "",
     sub: "",
   });
+  const [selectedClienti, setSelectedClienti] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,6 +40,11 @@ export default function PratichePage() {
         if (!cancelled && data) setPratiche(data);
         if (!cancelled) setLoading(false);
       });
+    fetch("/api/clienti")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (!cancelled && data) setAllClienti(data);
+      });
     return () => { cancelled = true; };
   }, []);
 
@@ -49,7 +54,10 @@ export default function PratichePage() {
     const res = await fetch("/api/pratiche", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        clientiIds: selectedClienti,
+      }),
     });
     if (res.ok) {
       setShowForm(false);
@@ -61,10 +69,19 @@ export default function PratichePage() {
         particella: "",
         sub: "",
       });
+      setSelectedClienti([]);
       const data = await fetch("/api/pratiche").then((r) => r.json());
       setPratiche(data);
     }
     setSaving(false);
+  }
+
+  function toggleCliente(clienteId: number) {
+    setSelectedClienti((prev) =>
+      prev.includes(clienteId)
+        ? prev.filter((id) => id !== clienteId)
+        : [...prev, clienteId]
+    );
   }
 
   const filtered =
@@ -171,6 +188,28 @@ export default function PratichePage() {
               </div>
             </div>
             <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Clienti associati
+              </label>
+              <div className="space-y-2 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                {allClienti.length === 0 ? (
+                  <p className="text-sm text-slate-400">Nessun cliente disponibile</p>
+                ) : (
+                  allClienti.map((c) => (
+                    <label key={c.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={selectedClienti.includes(c.id)}
+                        onChange={() => toggleCliente(c.id)}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-sm text-slate-700">{c.nome} {c.cognome}</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Descrizione
               </label>
@@ -246,7 +285,7 @@ export default function PratichePage() {
             <thead>
               <tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50">
                 <th className="px-6 py-4">Pratica</th>
-                <th className="px-6 py-4">Cliente</th>
+                <th className="px-6 py-4">Clienti</th>
                 <th className="px-6 py-4">Geometra</th>
                 <th className="px-6 py-4">Stato</th>
                 <th className="px-6 py-4">Data</th>
@@ -269,8 +308,8 @@ export default function PratichePage() {
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500">
-                    {p.clienteNome
-                      ? `${p.clienteNome} ${p.clienteCognome}`
+                    {p.clientiAssociati && p.clientiAssociati.length > 0
+                      ? p.clientiAssociati.map((c) => `${c.nome} ${c.cognome}`).join(", ")
                       : "—"}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500">

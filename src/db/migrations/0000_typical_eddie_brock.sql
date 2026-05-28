@@ -42,11 +42,35 @@ CREATE TABLE `pratiche` (
 	FOREIGN KEY (`geometra_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
+CREATE TABLE `pratiche_clienti` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`pratica_id` integer NOT NULL,
+	`cliente_id` integer NOT NULL,
+	FOREIGN KEY (`pratica_id`) REFERENCES `pratiche`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`cliente_id`) REFERENCES `clienti`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `pratiche_clienti_pratica_id_cliente_id_unique` ON `pratiche_clienti` (`pratica_id`,`cliente_id`);--> statement-breakpoint
 CREATE TABLE `sessions` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` integer NOT NULL,
 	`expires_at` integer NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `tickets` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`titolo` text NOT NULL,
+	`messaggio` text,
+	`stato` text DEFAULT 'aperto' NOT NULL,
+	`pratica_id` integer,
+	`cliente_id` integer NOT NULL,
+	`geometra_id` integer,
+	`created_at` integer,
+	`updated_at` integer,
+	FOREIGN KEY (`pratica_id`) REFERENCES `pratiche`(`id`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`cliente_id`) REFERENCES `clienti`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`geometra_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE TABLE `users` (

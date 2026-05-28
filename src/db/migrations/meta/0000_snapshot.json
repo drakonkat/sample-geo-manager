@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9200b8d7-54b5-4b11-97d0-ad85749ff912",
+  "id": "064a8880-022c-45d7-a6e4-016013357c40",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "clienti": {
@@ -314,6 +314,73 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "pratiche_clienti": {
+      "name": "pratiche_clienti",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "pratica_id": {
+          "name": "pratica_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "pratiche_clienti_pratica_id_cliente_id_unique": {
+          "name": "pratiche_clienti_pratica_id_cliente_id_unique",
+          "columns": [
+            "pratica_id",
+            "cliente_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "pratiche_clienti_pratica_id_pratiche_id_fk": {
+          "name": "pratiche_clienti_pratica_id_pratiche_id_fk",
+          "tableFrom": "pratiche_clienti",
+          "tableTo": "pratiche",
+          "columnsFrom": [
+            "pratica_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pratiche_clienti_cliente_id_clienti_id_fk": {
+          "name": "pratiche_clienti_cliente_id_clienti_id_fk",
+          "tableFrom": "pratiche_clienti",
+          "tableTo": "clienti",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "sessions": {
       "name": "sessions",
       "columns": {
@@ -352,6 +419,120 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "tickets": {
+      "name": "tickets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "titolo": {
+          "name": "titolo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "messaggio": {
+          "name": "messaggio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "stato": {
+          "name": "stato",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'aperto'"
+        },
+        "pratica_id": {
+          "name": "pratica_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "geometra_id": {
+          "name": "geometra_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tickets_pratica_id_pratiche_id_fk": {
+          "name": "tickets_pratica_id_pratiche_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "pratiche",
+          "columnsFrom": [
+            "pratica_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "tickets_cliente_id_clienti_id_fk": {
+          "name": "tickets_cliente_id_clienti_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "clienti",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tickets_geometra_id_users_id_fk": {
+          "name": "tickets_geometra_id_users_id_fk",
+          "tableFrom": "tickets",
+          "tableTo": "users",
+          "columnsFrom": [
+            "geometra_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

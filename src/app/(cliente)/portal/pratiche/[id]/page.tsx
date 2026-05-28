@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/db";
-import { pratiche, documenti, clienti, users } from "@/db/schema";
+import { pratiche, documenti, clienti, users, praticheClienti } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/lib/utils";
 import Link from "next/link";
 import { ClientePortalHeader } from "../../ClientePortalHeader";
+import { TicketForm } from "./TicketForm";
 
 export default async function ClientePraticaDetailPage({
   params,
@@ -53,9 +54,9 @@ export default async function ClientePraticaDetailPage({
     !cliente ||
     !(await db
       .select()
-      .from(pratiche)
+      .from(praticheClienti)
       .where(
-        and(eq(pratiche.id, praticaId), eq(pratiche.clienteId, cliente.id))
+        and(eq(praticheClienti.praticaId, praticaId), eq(praticheClienti.clienteId, cliente.id))
       ))[0]
   ) {
     notFound();
@@ -246,7 +247,7 @@ export default async function ClientePraticaDetailPage({
             </div>
           ) : (
             <div className="space-y-2">
-              {docs.map((doc) => (
+              {docs.map((doc: { id: number; nome: string; filename: string; dimensione: number | null; createdAt: Date | null }) => (
                 <div
                   key={doc.id}
                   className="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-indigo-50/50 transition-colors group"
@@ -304,6 +305,8 @@ export default async function ClientePraticaDetailPage({
             </div>
           )}
         </div>
+
+        <TicketForm praticaId={pratica.id} />
       </main>
     </div>
   );

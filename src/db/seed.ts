@@ -1,6 +1,6 @@
 import { hash } from "bcryptjs";
 import { db } from "./index";
-import { users, clienti, pratiche } from "./schema";
+import { users, clienti, pratiche, praticheClienti, tickets } from "./schema";
 
 async function seed() {
   console.log("🌱 Inizio seeding del database...");
@@ -140,6 +140,39 @@ async function seed() {
       },
     ]);
     console.log("✅ Pratiche inserite");
+
+    console.log("🔗 Inserimento associazioni pratiche-clienti...");
+    await db.insert(praticheClienti).values([
+      { praticaId: 1, clienteId: 1 },
+      { praticaId: 2, clienteId: 2 },
+      { praticaId: 3, clienteId: 3 },
+      { praticaId: 4, clienteId: 4 },
+      { praticaId: 5, clienteId: 2 },
+      { praticaId: 6, clienteId: 1 },
+      { praticaId: 1, clienteId: 3 },
+    ]);
+    console.log("✅ Associazioni inserite");
+
+    console.log("🎫 Inserimento tickets demo...");
+    await db.insert(tickets).values([
+      {
+        titolo: "Documentazione mancante per frazionamento",
+        messaggio: "C'è bisogno della planimetria aggiornata per procedere con il frazionamento.",
+        stato: "aperto",
+        praticaId: 1,
+        clienteId: 1,
+        geometraId: 2,
+      },
+      {
+        titolo: "Richiesta info perizia",
+        messaggio: "Vorrei sapere quando sarà pronta la perizia di stima.",
+        stato: "in_lavorazione",
+        praticaId: 5,
+        clienteId: 2,
+        geometraId: 2,
+      },
+    ]);
+    console.log("✅ Tickets inseriti");
 
     console.log("🎉 Seeding completato con successo!");
   } catch (error) {

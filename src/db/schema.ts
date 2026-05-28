@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, unique } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -58,6 +58,20 @@ export const pratiche = sqliteTable("pratiche", {
     .$defaultFn(() => new Date()),
 });
 
+export const praticheClienti = sqliteTable(
+  "pratiche_clienti",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    praticaId: integer("pratica_id")
+      .notNull()
+      .references(() => pratiche.id, { onDelete: "cascade" }),
+    clienteId: integer("cliente_id")
+      .notNull()
+      .references(() => clienti.id, { onDelete: "cascade" }),
+  },
+  (t) => [unique().on(t.praticaId, t.clienteId)]
+);
+
 export const documenti = sqliteTable("documenti", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   nome: text("nome").notNull(),
@@ -74,5 +88,29 @@ export const documenti = sqliteTable("documenti", {
     .notNull()
     .default(false),
   createdAt: integer("created_at", { mode: "timestamp" })
+    .$defaultFn(() => new Date()),
+});
+
+export const tickets = sqliteTable("tickets", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  titolo: text("titolo").notNull(),
+  messaggio: text("messaggio"),
+  stato: text("stato", {
+    enum: ["aperto", "in_lavorazione", "risolto"],
+  })
+    .notNull()
+    .default("aperto"),
+  praticaId: integer("pratica_id").references(() => pratiche.id, {
+    onDelete: "set null",
+  }),
+  clienteId: integer("cliente_id")
+    .notNull()
+    .references(() => clienti.id, { onDelete: "cascade" }),
+  geometraId: integer("geometra_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
     .$defaultFn(() => new Date()),
 });

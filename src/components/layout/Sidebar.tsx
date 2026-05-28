@@ -25,6 +25,12 @@ const navItems = [
     roles: ["admin", "geometra"],
   },
   {
+    href: "/tickets",
+    label: "Ticket",
+    icon: "M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z",
+    roles: ["admin", "geometra"],
+  },
+  {
     href: "/utenti",
     label: "Utenti",
     icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",

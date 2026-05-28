@@ -25,7 +25,7 @@ export default async function MioAccountPage() {
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-2xl font-bold text-white shadow-lg ring-4 ring-white">
               {user.name
                 .split(" ")
-                .map((n) => n[0])
+                .map((n: string) => n[0])
                 .join("")
                 .toUpperCase()
                 .slice(0, 2)}

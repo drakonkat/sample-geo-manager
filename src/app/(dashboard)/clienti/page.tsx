@@ -12,6 +12,7 @@ interface Cliente {
   telefono: string | null;
   indirizzo: string | null;
   codiceFiscale: string | null;
+  userId: number | null;
   createdAt: Date | null;
 }
 
@@ -28,6 +29,8 @@ export default function ClientiPage() {
     codiceFiscale: "",
   });
   const [saving, setSaving] = useState(false);
+  const [creatingUser, setCreatingUser] = useState<number | null>(null);
+  const [userCreated, setUserCreated] = useState<Record<number, { email: string; password: string }>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +65,27 @@ export default function ClientiPage() {
       setClienti(data);
     }
     setSaving(false);
+  }
+
+  async function createClienteUser(clienteId: number) {
+    setCreatingUser(clienteId);
+    try {
+      const res = await fetch(`/api/clienti/${clienteId}/user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setUserCreated((prev) => ({ ...prev, [clienteId]: { email: data.email, password: data.password } }));
+        setClienti((prev) =>
+          prev.map((c) => (c.id === clienteId ? { ...c, userId: data.userId } : c))
+        );
+      }
+    } finally {
+      setCreatingUser(null);
+    }
   }
 
   return (
@@ -168,6 +192,7 @@ export default function ClientiPage() {
                 <th className="px-6 py-4">Email</th>
                 <th className="px-6 py-4">Telefono</th>
                 <th className="px-6 py-4">Codice Fiscale</th>
+                <th className="px-6 py-4">Account</th>
                 <th className="px-6 py-4">Data</th>
               </tr>
             </thead>
@@ -185,6 +210,36 @@ export default function ClientiPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500 font-mono">
                     {c.codiceFiscale || "—"}
+                  </td>
+                  <td className="px-6 py-4">
+                    {c.userId ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20">
+                        Utente attivo
+                      </span>
+                    ) : userCreated[c.id] ? (
+                      <div className="text-xs text-slate-600">
+                        <p className="font-medium text-emerald-600">Account creato!</p>
+                        <p>Email: {userCreated[c.id].email}</p>
+                        <p>Password: {userCreated[c.id].password}</p>
+                      </div>
+                    ) : c.email ? (
+                      <button
+                        onClick={() => createClienteUser(c.id)}
+                        disabled={creatingUser === c.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {creatingUser === c.id ? (
+                          <div className="w-3 h-3 border border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        )}
+                        Crea Account
+                      </button>
+                    ) : (
+                      <span className="text-xs text-slate-400">Nessuna email</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-500">
                     {c.createdAt ? formatDate(c.createdAt) : "—"}

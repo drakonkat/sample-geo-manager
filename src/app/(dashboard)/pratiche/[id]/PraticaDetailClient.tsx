@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { statoLabels, statoColors, formatDate, formatFileSize } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
 import { FileUpload } from "@/components/FileUpload";
 
 interface Pratica {
@@ -17,12 +16,9 @@ interface Pratica {
   foglio: string | null;
   particella: string | null;
   sub: string | null;
-  clienteId: number | null;
   geometraId: number | null;
   createdAt: Date | null;
   updatedAt: Date | null;
-  clienteNome: string | null;
-  clienteCognome: string | null;
   geometraNome: string | null;
 }
 
@@ -47,25 +43,39 @@ export function PraticaDetailClient({
   pratica,
   docs,
   allClienti,
+  linkedClientiIds,
   userRole,
 }: {
   pratica: Pratica;
   docs: Doc[];
   allClienti: Cliente[];
+  linkedClientiIds: number[];
   userRole: string;
 }) {
   const router = useRouter();
   const [stato, setStato] = useState(pratica.stato || "aperta");
-  const [clienteId, setClienteId] = useState(String(pratica.clienteId || ""));
+  const [selectedClienti, setSelectedClienti] = useState<number[]>(linkedClientiIds);
   const [saving, setSaving] = useState(false);
   const [docList, setDocList] = useState(docs);
 
-  async function updateStato() {
+  function toggleCliente(clienteId: number) {
+    setSelectedClienti((prev) =>
+      prev.includes(clienteId)
+        ? prev.filter((id) => id !== clienteId)
+        : [...prev, clienteId]
+    );
+  }
+
+  async function updatePratica() {
     setSaving(true);
     await fetch(`/api/pratiche`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: pratica.id, stato, clienteId: clienteId || null }),
+      body: JSON.stringify({
+        id: pratica.id,
+        stato,
+        clientiIds: selectedClienti,
+      }),
     });
     setSaving(false);
     router.refresh();
@@ -136,12 +146,10 @@ export function PraticaDetailClient({
                 <p className="text-slate-900 font-semibold text-sm">{pratica.geometraNome || "—"}</p>
               </div>
               <div>
-                <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Cliente</p>
-                <p className="text-slate-900 font-semibold text-sm">
-                  {pratica.clienteNome
-                    ? `${pratica.clienteNome} ${pratica.clienteCognome}`
-                    : "—"}
-                </p>
+                <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Stato</p>
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${statoColors[stato]}`}>
+                  {statoLabels[stato]}
+                </span>
               </div>
             </div>
             {pratica.descrizione && (
@@ -255,22 +263,32 @@ export function PraticaDetailClient({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Cliente</label>
-                  <select
-                    value={clienteId}
-                    onChange={(e) => setClienteId(e.target.value)}
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
-                  >
-                    <option value="">Nessuno</option>
-                    {allClienti.map((c) => (
-                      <option key={c.id} value={String(c.id)}>
-                        {c.nome} {c.cognome}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Clienti associati</label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                    {allClienti.length === 0 ? (
+                      <p className="text-sm text-slate-400">Nessun cliente disponibile</p>
+                    ) : (
+                      allClienti.map((c) => (
+                        <label key={c.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white cursor-pointer transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={selectedClienti.includes(c.id)}
+                            onChange={() => toggleCliente(c.id)}
+                            className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="text-sm text-slate-700">{c.nome} {c.cognome}</span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  {selectedClienti.length > 0 && (
+                    <p className="mt-2 text-xs text-slate-400">
+                      {selectedClienti.length} cliente{selectedClienti.length !== 1 ? "i" : ""} selezionat{selectedClienti.length !== 1 ? "i" : ""}
+                    </p>
+                  )}
                 </div>
                 <Button
-                  onClick={updateStato}
+                  onClick={updatePratica}
                   loading={saving}
                   className="w-full bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 rounded-xl py-2.5"
                 >

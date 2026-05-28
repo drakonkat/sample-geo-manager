@@ -1,12 +1,12 @@
 {
-  "version": "7",
+  "version": "5",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
-      "when": 1779959051241,
-      "tag": "0000_goofy_elektra",
+      "when": 1779969544560,
+      "tag": "0000_typical_eddie_brock",
       "breakpoints": true
     }
   ]

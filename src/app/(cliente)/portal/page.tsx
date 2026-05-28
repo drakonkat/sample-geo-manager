@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/db";
-import { pratiche, documenti, clienti } from "@/db/schema";
+import { pratiche, documenti, clienti, tickets, praticheClienti } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import {
   statoLabels,
@@ -34,8 +34,24 @@ export default async function ClientePortalPage() {
           createdAt: pratiche.createdAt,
         })
         .from(pratiche)
-        .where(eq(pratiche.clienteId, cliente.id))
+        .innerJoin(praticheClienti, eq(pratiche.id, praticheClienti.praticaId))
+        .where(eq(praticheClienti.clienteId, cliente.id))
         .orderBy(desc(pratiche.createdAt))
+    : [];
+
+  const userTickets = cliente
+    ? await db
+        .select({
+          id: tickets.id,
+          titolo: tickets.titolo,
+          messaggio: tickets.messaggio,
+          stato: tickets.stato,
+          praticaId: tickets.praticaId,
+          createdAt: tickets.createdAt,
+        })
+        .from(tickets)
+        .where(eq(tickets.clienteId, cliente.id))
+        .orderBy(desc(tickets.createdAt))
     : [];
 
   return (
@@ -48,41 +64,97 @@ export default async function ClientePortalPage() {
             Benvenuto, {user.name}
           </h1>
           <p className="text-indigo-100 mt-1">
-            Qui puoi consultare le tue pratiche e i documenti condivisi
+            Qui puoi consultare le tue pratiche, i documenti condivisi e gestire i tuoi ticket
           </p>
         </div>
 
-        {userPratiche.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-16 text-center">
-            <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-indigo-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-slate-900">Le tue Pratiche</h2>
+          </div>
+          {userPratiche.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-16 text-center">
+              <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-indigo-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <p className="text-slate-500 font-medium">
+                Non hai ancora pratiche assegnate
+              </p>
+              <p className="text-sm text-slate-400 mt-1">
+                Le tue pratiche appariranno qui quando saranno create
+              </p>
             </div>
-            <p className="text-slate-500 font-medium">
-              Non hai ancora pratiche assegnate
-            </p>
-            <p className="text-sm text-slate-400 mt-1">
-              Le tue pratiche appariranno qui quando saranno create
-            </p>
+          ) : (
+            <div className="space-y-5">
+              {userPratiche.map((p: typeof userPratiche[number]) => (
+                <PraticaCard key={p.id} pratica={p} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-slate-900">I tuoi Ticket</h2>
           </div>
-        ) : (
-          <div className="space-y-5">
-            {userPratiche.map((p) => (
-              <PraticaCard key={p.id} pratica={p} />
-            ))}
-          </div>
-        )}
+          {userTickets.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-12 text-center">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+              </div>
+              <p className="text-slate-500 font-medium">Nessun ticket</p>
+              <p className="text-sm text-slate-400 mt-1">
+                Apri un ticket dalla pagina di dettaglio di una pratica
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50">
+                    <th className="px-6 py-4">Ticket</th>
+                    <th className="px-6 py-4">Stato</th>
+                    <th className="px-6 py-4">Data</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {userTickets.map((t: typeof userTickets[number]) => (
+                    <tr key={t.id} className="hover:bg-indigo-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-slate-900 text-sm">{t.titolo}</p>
+                        {t.messaggio && (
+                          <p className="text-xs text-slate-400 mt-0.5 truncate max-w-md">{t.messaggio}</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${statoColors[t.stato === "risolto" ? "chiusa" : t.stato === "in_lavorazione" ? "in_corso" : "aperta"]}`}>
+                          {t.stato === "aperto" ? "Aperto" : t.stato === "in_lavorazione" ? "In Lavorazione" : "Risolto"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500">
+                        {t.createdAt ? formatDate(t.createdAt) : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
@@ -186,7 +258,7 @@ async function PraticaCard({
               Documenti condivisi ({docs.length})
             </p>
             <div className="space-y-1.5">
-              {docs.map((doc) => (
+              {docs.map((doc: { id: number; nome: string; filename: string; dimensione: number | null; createdAt: Date | null }) => (
                 <div
                   key={doc.id}
                   className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors group"

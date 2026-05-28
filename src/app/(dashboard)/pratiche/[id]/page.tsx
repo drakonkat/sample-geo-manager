@@ -1,9 +1,8 @@
 import { db } from "@/db";
-import { pratiche, clienti, users, documenti } from "@/db/schema";
+import { pratiche, clienti, users, documenti, praticheClienti } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
-import { statoLabels, statoColors, formatDate, formatFileSize } from "@/lib/utils";
 import { PraticaDetailClient } from "./PraticaDetailClient";
 
 export default async function PraticaDetailPage({
@@ -28,16 +27,12 @@ export default async function PraticaDetailPage({
       foglio: pratiche.foglio,
       particella: pratiche.particella,
       sub: pratiche.sub,
-      clienteId: pratiche.clienteId,
       geometraId: pratiche.geometraId,
       createdAt: pratiche.createdAt,
       updatedAt: pratiche.updatedAt,
-      clienteNome: clienti.nome,
-      clienteCognome: clienti.cognome,
       geometraNome: users.name,
     })
     .from(pratiche)
-    .leftJoin(clienti, eq(pratiche.clienteId, clienti.id))
     .leftJoin(users, eq(pratiche.geometraId, users.id))
     .where(eq(pratiche.id, praticaId));
 
@@ -62,11 +57,17 @@ export default async function PraticaDetailPage({
     .select({ id: clienti.id, nome: clienti.nome, cognome: clienti.cognome })
     .from(clienti);
 
+  const linkedClienti = await db
+    .select({ clienteId: praticheClienti.clienteId })
+    .from(praticheClienti)
+    .where(eq(praticheClienti.praticaId, praticaId));
+
   return (
     <PraticaDetailClient
       pratica={pratica}
       docs={docs}
       allClienti={allClienti}
+      linkedClientiIds={linkedClienti.map((l: { clienteId: number }) => l.clienteId)}
       userRole={user.role}
     />
   );

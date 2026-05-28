@@ -1,6 +1,6 @@
 import { hash } from "bcryptjs";
 import { db } from "@/db";
-import { users, clienti, pratiche } from "@/db/schema";
+import { users, clienti, pratiche, praticheClienti, tickets } from "@/db/schema";
 import { count } from "drizzle-orm";
 
 let seeded = false;
@@ -40,8 +40,37 @@ export async function ensureSeeded() {
       { titolo: "Confinamento e Mappatura", descrizione: "Rilievo topografico e definizione confini catastali per area residenziale in Via Toscana 7, Milano.", stato: "chiusa", indirizzo: "Via Toscana 7, Milano", foglio: "3", particella: "89", clienteId: 1, geometraId: 2 },
     ]);
 
+    await db.insert(praticheClienti).values([
+      { praticaId: 1, clienteId: 1 },
+      { praticaId: 2, clienteId: 2 },
+      { praticaId: 3, clienteId: 3 },
+      { praticaId: 4, clienteId: 4 },
+      { praticaId: 5, clienteId: 2 },
+      { praticaId: 6, clienteId: 1 },
+      { praticaId: 1, clienteId: 3 },
+    ]);
+
+    await db.insert(tickets).values([
+      {
+        titolo: "Documentazione mancante per frazionamento",
+        messaggio: "C'è bisogno della planimetria aggiornata per procedere con il frazionamento.",
+        stato: "aperto",
+        praticaId: 1,
+        clienteId: 1,
+        geometraId: 2,
+      },
+      {
+        titolo: "Richiesta info perizia",
+        messaggio: "Vorrei sapere quando sarà pronta la perizia di stima.",
+        stato: "in_lavorazione",
+        praticaId: 5,
+        clienteId: 2,
+        geometraId: 2,
+      },
+    ]);
+
     seeded = true;
-    console.log("✅ Dati demo inseriti: 3 utenti, 4 clienti, 6 pratiche");
+    console.log("✅ Dati demo inseriti: 3 utenti, 4 clienti, 6 pratiche, 2 tickets");
   } catch (err) {
     console.error("⚠️ Errore auto-seed:", err);
   }

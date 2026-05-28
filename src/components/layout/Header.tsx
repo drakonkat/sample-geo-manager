@@ -36,7 +36,7 @@ export function Header({ user }: HeaderProps) {
         <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-semibold text-sm ring-2 ring-indigo-100">
           {user.name
             .split(" ")
-            .map((n) => n[0])
+            .map((n: string) => n[0])
             .join("")
             .toUpperCase()
             .slice(0, 2)}
