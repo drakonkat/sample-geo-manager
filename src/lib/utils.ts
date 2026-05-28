@@ -12,12 +12,15 @@ export function formatFileSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 }
 
-export function formatDate(date: Date): string {
+export function formatDate(date: Date | number | string | null): string {
+  if (!date) return "—";
+  const d = date instanceof Date ? date : new Date(typeof date === "number" ? date * 1000 : date);
+  if (isNaN(d.getTime())) return "—";
   return new Intl.DateTimeFormat("it-IT", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(date);
+  }).format(d);
 }
 
 export const statoLabels: Record<string, string> = {
