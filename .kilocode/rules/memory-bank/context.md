@@ -8,18 +8,16 @@ GeoGest is a web-based management system for surveying firms (studi di geometri)
 
 ## Recently Completed
 
-- [x] Database schema with Drizzle ORM + SQLite (users, sessions, clienti, pratiche, documenti)
-- [x] Cookie-based authentication system (login, register, logout, session management)
-- [x] Role-based access control (admin, geometra, cliente)
-- [x] Dashboard with stats and recent practices
-- [x] Pratiche module (CRUD, filter by status, detail with documents)
-- [x] Documenti module (upload with drag & drop, download, visibility toggle for clients)
-- [x] Clienti module (anagrafica CRUD)
-- [x] Utenti management (admin-only)
-- [x] Account settings page (name + password update)
-- [x] Cliente portal (read-only view of assigned practices and shared documents)
-- [x] Dockerfile for Coolify deployment (standalone output)
-- [x] Middleware for auth-based routing
+- [x] Modern UI redesign: indigo/slate design system across all pages
+- [x] Gradient sidebar (slate-950), modern cards with shadows (rounded-2xl)
+- [x] Split-layout login/register with branded panel + glass card
+- [x] Dashboard with gradient stat cards, modern table styling
+- [x] Pratiche page with rounded-full filter pills, skeleton loading
+- [x] FileUpload with indigo accents, scale animation on drag
+- [x] Status badges: emerald (aperta), amber (in corso), slate (sospesa), indigo (chiusa)
+- [x] Seed script (`src/db/seed.ts`) with 3 users, 4 clienti, 6 pratiche
+- [x] API seed endpoint (`/api/seed`) for browser-based seeding (idempotent)
+- [x] All pages restyled: clienti, utenti (card grid), mio-account, portal
 - [x] All TypeScript and ESLint checks passing
 
 ## Current Structure
@@ -28,22 +26,20 @@ GeoGest is a web-based management system for surveying firms (studi di geometri)
 |----------------|---------|--------|
 | `src/db/schema.ts` | Database table definitions | ✅ |
 | `src/db/index.ts` | Database client | ✅ |
+| `src/db/seed.ts` | Seed script with demo data | ✅ NEW |
 | `src/db/migrate.ts` | Migration script | ✅ |
 | `src/lib/auth.ts` | Authentication utilities | ✅ |
 | `src/lib/utils.ts` | Shared utilities (formatting, labels) | ✅ |
 | `src/middleware.ts` | Auth routing middleware | ✅ |
-| `src/components/ui/` | Button, Card, Input, Select, Badge | ✅ |
-| `src/components/layout/` | Sidebar, Header | ✅ |
-| `src/components/FileUpload.tsx` | Drag & drop file upload | ✅ |
-| `src/app/login/page.tsx` | Login page | ✅ |
-| `src/app/register/page.tsx` | Registration page | ✅ |
-| `src/app/(dashboard)/` | Admin/Geometra area | ✅ |
-| `src/app/(cliente)/portal/` | Client portal | ✅ |
+| `src/components/ui/` | Button, Card, Input, Select, Badge | ✅ Modern |
+| `src/components/layout/` | Sidebar, Header | ✅ Modern |
+| `src/components/FileUpload.tsx` | Drag & drop file upload | ✅ Modern |
+| `src/app/login/page.tsx` | Login page | ✅ Modern split-layout |
+| `src/app/register/page.tsx` | Registration page | ✅ Modern split-layout |
+| `src/app/(dashboard)/` | Admin/Geometra area | ✅ Modern |
+| `src/app/(cliente)/portal/` | Client portal | ✅ Modern |
 | `src/app/api/auth/` | Login, register, logout, update-profile | ✅ |
-| `src/app/api/pratiche/` | Pratiche CRUD | ✅ |
-| `src/app/api/clienti/` | Clienti CRUD | ✅ |
-| `src/app/api/utenti/` | Users list (admin) | ✅ |
-| `src/app/api/upload/` | File upload endpoint | ✅ |
+| `src/app/api/seed/route.ts` | Database seeding endpoint | ✅ NEW |
 | `Dockerfile` | Coolify deployment | ✅ |
 
 ## Database Schema
@@ -83,3 +79,4 @@ GeoGest is a web-based management system for surveying firms (studi di geometri)
 | Date | Changes |
 |------|---------|
 | 2026-05-28 | Initial GeoGest build: full gestionale with auth, pratiche, documenti, clienti, portal, Dockerfile |
+| 2026-05-28 | Modern UI redesign (indigo/slate), seed data (3 users, 4 clienti, 6 pratiche), /api/seed endpoint |
