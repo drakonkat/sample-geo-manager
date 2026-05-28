@@ -1,4 +1,13 @@
-import { runMigrations } from "@kilocode/app-builder-db";
-import { db } from "./index";
+import * as schema from "./schema";
 
-await runMigrations(db, {}, { migrationsFolder: "./src/db/migrations" });
+if (!process.env.DB_URL || !process.env.DB_TOKEN) {
+  console.error("Database environment variables not set");
+  process.exit(1);
+}
+
+const { createDatabase, runMigrations } = require("@kilocode/app-builder-db");
+const db = createDatabase(schema);
+
+runMigrations(db, {}, { migrationsFolder: "./src/db/migrations" });
+
+console.log("Migrations completed successfully");
