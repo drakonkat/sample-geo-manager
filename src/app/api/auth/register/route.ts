@@ -3,9 +3,12 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword, createSession } from "@/lib/auth";
+import { ensureSeeded } from "@/lib/seed";
 
 export async function POST(request: Request) {
   try {
+    await ensureSeeded();
+
     const { name, email, password, role } = await request.json();
 
     if (!name || !email || !password) {
