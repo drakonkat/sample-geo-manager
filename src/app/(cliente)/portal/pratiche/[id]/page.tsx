@@ -26,7 +26,7 @@ export default async function ClientePraticaDetailPage({
   const praticaId = parseInt(id);
   if (isNaN(praticaId)) notFound();
 
-  const [pratica] = await db
+  let pratica = await db
     .select({
       id: pratiche.id,
       titolo: pratiche.titolo,
@@ -43,40 +43,62 @@ export default async function ClientePraticaDetailPage({
     .leftJoin(users, eq(pratiche.geometraId, users.id))
     .where(eq(pratiche.id, praticaId));
 
-  if (!pratica) notFound();
+  if (!pratica[0]) notFound();
 
-  const [cliente] = await db
-    .select()
-    .from(clienti)
-    .where(eq(clienti.userId, user.id));
+  let cliente = null;
+  try {
+    const [c] = await db
+      .select()
+      .from(clienti)
+      .where(eq(clienti.userId, user.id));
+    cliente = c;
+  } catch {
+    // table may not exist
+  }
 
-  if (
-    !cliente ||
-    !(await db
+  if (!cliente) notFound();
+
+  let hasAccess = false;
+  try {
+    const [link] = await db
       .select()
       .from(praticheClienti)
       .where(
         and(eq(praticheClienti.praticaId, praticaId), eq(praticheClienti.clienteId, cliente.id))
-      ))[0]
-  ) {
-    notFound();
+      );
+    hasAccess = !!link;
+  } catch {
+    // table may not exist
   }
 
-  const docs = await db
-    .select({
-      id: documenti.id,
-      nome: documenti.nome,
-      filename: documenti.filename,
-      dimensione: documenti.dimensione,
-      createdAt: documenti.createdAt,
-    })
-    .from(documenti)
-    .where(
-      and(
-        eq(documenti.praticaId, praticaId),
-        eq(documenti.visibileAlCliente, true)
-      )
-    );
+  if (!hasAccess) notFound();
+
+  let docs: Array<{
+    id: number;
+    nome: string;
+    filename: string;
+    dimensione: number | null;
+    createdAt: Date | null;
+  }> = [];
+  try {
+    docs = await db
+      .select({
+        id: documenti.id,
+        nome: documenti.nome,
+        filename: documenti.filename,
+        dimensione: documenti.dimensione,
+        createdAt: documenti.createdAt,
+      })
+      .from(documenti)
+      .where(
+        and(
+          eq(documenti.praticaId, praticaId),
+          eq(documenti.visibileAlCliente, true)
+        )
+      );
+  } catch {
+    // table may not exist
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -104,13 +126,13 @@ export default async function ClientePraticaDetailPage({
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {pratica.titolo}
+              {pratica[0].titolo}
             </h1>
             <div className="flex items-center gap-2 mt-2">
               <span
-                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${statoColors[pratica.stato || "aperta"]}`}
+                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${statoColors[pratica[0].stato || "aperta"]}`}
               >
-                {statoLabels[pratica.stato || "aperta"]}
+                {statoLabels[pratica[0].stato || "aperta"]}
               </span>
             </div>
           </div>
@@ -136,70 +158,70 @@ export default async function ClientePraticaDetailPage({
             Dettagli
           </h2>
           <dl className="grid grid-cols-2 gap-5 text-sm">
-            {pratica.indirizzo && (
+{pratica[0].indirizzo && (
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Indirizzo
+                  </dt>
+                  <dd className="text-slate-900 font-medium mt-1">
+                    {pratica[0].indirizzo}
+                  </dd>
+                </div>
+              )}
+              {pratica[0].foglio && (
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Foglio
+                  </dt>
+                  <dd className="text-slate-900 font-medium mt-1">
+                    {pratica[0].foglio}
+                  </dd>
+                </div>
+              )}
+              {pratica[0].particella && (
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Particella
+                  </dt>
+                  <dd className="text-slate-900 font-medium mt-1">
+                    {pratica[0].particella}
+                  </dd>
+                </div>
+              )}
+              {pratica[0].sub && (
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Sub
+                  </dt>
+                  <dd className="text-slate-900 font-medium mt-1">
+                    {pratica[0].sub}
+                  </dd>
+                </div>
+              )}
               <div className="bg-slate-50 rounded-xl p-3">
                 <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Indirizzo
+                  Geometra
                 </dt>
                 <dd className="text-slate-900 font-medium mt-1">
-                  {pratica.indirizzo}
+                  {pratica[0].geometraNome || "\u2014"}
                 </dd>
               </div>
-            )}
-            {pratica.foglio && (
               <div className="bg-slate-50 rounded-xl p-3">
                 <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Foglio
+                  Data
                 </dt>
                 <dd className="text-slate-900 font-medium mt-1">
-                  {pratica.foglio}
+                  {pratica[0].createdAt ? formatDate(pratica[0].createdAt) : "\u2014"}
                 </dd>
               </div>
-            )}
-            {pratica.particella && (
-              <div className="bg-slate-50 rounded-xl p-3">
+            </dl>
+            {pratica[0].descrizione && (
+              <div className="mt-5 pt-5 border-t border-slate-100">
                 <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Particella
+                  Descrizione
                 </dt>
-                <dd className="text-slate-900 font-medium mt-1">
-                  {pratica.particella}
-                </dd>
-              </div>
-            )}
-            {pratica.sub && (
-              <div className="bg-slate-50 rounded-xl p-3">
-                <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  Sub
-                </dt>
-                <dd className="text-slate-900 font-medium mt-1">
-                  {pratica.sub}
-                </dd>
-              </div>
-            )}
-            <div className="bg-slate-50 rounded-xl p-3">
-              <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Geometra
-              </dt>
-              <dd className="text-slate-900 font-medium mt-1">
-                {pratica.geometraNome || "\u2014"}
-              </dd>
-            </div>
-            <div className="bg-slate-50 rounded-xl p-3">
-              <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Data
-              </dt>
-              <dd className="text-slate-900 font-medium mt-1">
-                {pratica.createdAt ? formatDate(pratica.createdAt) : "\u2014"}
-              </dd>
-            </div>
-          </dl>
-          {pratica.descrizione && (
-            <div className="mt-5 pt-5 border-t border-slate-100">
-              <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                Descrizione
-              </dt>
-              <dd className="text-slate-700 text-sm mt-2 leading-relaxed">
-                {pratica.descrizione}
+                <dd className="text-slate-700 text-sm mt-2 leading-relaxed">
+                  {pratica[0].descrizione}
               </dd>
             </div>
           )}

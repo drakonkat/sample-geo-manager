@@ -17,7 +17,7 @@ export default async function PraticaDetailPage({
   const praticaId = parseInt(id);
   if (isNaN(praticaId)) notFound();
 
-  const [pratica] = await db
+  let pratica = await db
     .select({
       id: pratiche.id,
       titolo: pratiche.titolo,
@@ -36,38 +36,54 @@ export default async function PraticaDetailPage({
     .leftJoin(users, eq(pratiche.geometraId, users.id))
     .where(eq(pratiche.id, praticaId));
 
-  if (!pratica) notFound();
+  if (!pratica[0]) notFound();
 
-  const docs = await db
-    .select({
-      id: documenti.id,
-      nome: documenti.nome,
-      filename: documenti.filename,
-      mimeType: documenti.mimeType,
-      dimensione: documenti.dimensione,
-      visibileAlCliente: documenti.visibileAlCliente,
-      createdAt: documenti.createdAt,
-      caricatoDa: users.name,
-    })
-    .from(documenti)
-    .leftJoin(users, eq(documenti.caricatoDa, users.id))
-    .where(eq(documenti.praticaId, praticaId));
+  let docs: { id: number; nome: string; filename: string; mimeType: string | null; dimensione: number | null; visibileAlCliente: boolean; createdAt: Date | null; caricatoDa: string | null }[] = [];
+  try {
+    docs = await db
+      .select({
+        id: documenti.id,
+        nome: documenti.nome,
+        filename: documenti.filename,
+        mimeType: documenti.mimeType,
+        dimensione: documenti.dimensione,
+        visibileAlCliente: documenti.visibileAlCliente,
+        createdAt: documenti.createdAt,
+        caricatoDa: users.name,
+      })
+      .from(documenti)
+      .leftJoin(users, eq(documenti.caricatoDa, users.id))
+      .where(eq(documenti.praticaId, praticaId));
+  } catch {
+    // table may not exist
+  }
 
-  const allClienti = await db
-    .select({ id: clienti.id, nome: clienti.nome, cognome: clienti.cognome })
-    .from(clienti);
+  let allClienti: { id: number; nome: string; cognome: string }[] = [];
+  try {
+    allClienti = await db
+      .select({ id: clienti.id, nome: clienti.nome, cognome: clienti.cognome })
+      .from(clienti);
+  } catch {
+    // table may not exist
+  }
 
-  const linkedClienti = await db
-    .select({ clienteId: praticheClienti.clienteId })
-    .from(praticheClienti)
-    .where(eq(praticheClienti.praticaId, praticaId));
+  let linkedClientiIds: number[] = [];
+  try {
+    const linked = await db
+      .select({ clienteId: praticheClienti.clienteId })
+      .from(praticheClienti)
+      .where(eq(praticheClienti.praticaId, praticaId));
+    linkedClientiIds = linked.map((l: { clienteId: number }) => l.clienteId);
+  } catch {
+    // table may not exist
+  }
 
   return (
     <PraticaDetailClient
-      pratica={pratica}
+      pratica={pratica[0]}
       docs={docs}
       allClienti={allClienti}
-      linkedClientiIds={linkedClienti.map((l: { clienteId: number }) => l.clienteId)}
+      linkedClientiIds={linkedClientiIds}
       userRole={user.role}
     />
   );
