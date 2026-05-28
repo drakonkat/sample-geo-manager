@@ -65,22 +65,34 @@ export default function ClientiPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clienti</h1>
-          <p className="text-gray-500 mt-1">Gestisci l&apos;anagrafica dei clienti</p>
+          <h1 className="text-3xl font-bold text-slate-900">Clienti</h1>
+          <p className="text-slate-500 mt-1">Gestisci l&apos;anagrafica dei clienti</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? "Annulla" : "+ Nuovo Cliente"}
-        </Button>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 rounded-xl shadow-sm hover:from-indigo-700 hover:to-indigo-600 transition-all cursor-pointer"
+        >
+          {showForm ? (
+            "Annulla"
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Nuovo Cliente
+            </>
+          )}
+        </button>
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Nuovo Cliente</h2>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
+          <h2 className="text-lg font-semibold text-slate-900 mb-6">Nuovo Cliente</h2>
+          <form onSubmit={handleCreate} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {[
                 { key: "nome", label: "Nome *", placeholder: "Mario" },
                 { key: "cognome", label: "Cognome *", placeholder: "Rossi" },
@@ -90,7 +102,7 @@ export default function ClientiPage() {
                 { key: "codiceFiscale", label: "Codice Fiscale", placeholder: "RSSMRA80A01F205X" },
               ].map((field) => (
                 <div key={field.key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
                     {field.label}
                   </label>
                   <input
@@ -100,20 +112,21 @@ export default function ClientiPage() {
                       setForm({ ...form, [field.key]: e.target.value })
                     }
                     required={field.label.includes("*")}
-                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
                     placeholder={field.placeholder}
                   />
                 </div>
               ))}
             </div>
-            <div className="flex gap-3">
-              <Button type="submit" loading={saving}>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" loading={saving} className="bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 rounded-xl px-6">
                 Crea Cliente
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => setShowForm(false)}
+                className="rounded-xl"
               >
                 Annulla
               </Button>
@@ -123,39 +136,57 @@ export default function ClientiPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Caricamento...</div>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+          <div className="p-6 space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="h-4 bg-slate-100 rounded-full w-1/5 animate-pulse" />
+                <div className="h-4 bg-slate-100 rounded-full w-1/4 animate-pulse" />
+                <div className="h-4 bg-slate-100 rounded-full w-1/6 animate-pulse" />
+                <div className="h-4 bg-slate-100 rounded-full w-1/5 animate-pulse" />
+                <div className="h-4 bg-slate-100 rounded-full w-1/6 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : clienti.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          Nessun cliente presente
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-16 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 mb-4">
+            <svg className="w-8 h-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-1">Nessun cliente presente</h3>
+          <p className="text-slate-500 text-sm">Aggiungi il tuo primo cliente per iniziare</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">
-                <th className="px-6 py-3">Nome</th>
-                <th className="px-6 py-3">Email</th>
-                <th className="px-6 py-3">Telefono</th>
-                <th className="px-6 py-3">Codice Fiscale</th>
-                <th className="px-6 py-3">Data</th>
+              <tr className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50">
+                <th className="px-6 py-4">Nome</th>
+                <th className="px-6 py-4">Email</th>
+                <th className="px-6 py-4">Telefono</th>
+                <th className="px-6 py-4">Codice Fiscale</th>
+                <th className="px-6 py-4">Data</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-100">
               {clienti.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-3 font-medium text-gray-900">
+                <tr key={c.id} className="hover:bg-indigo-50/50 transition-colors">
+                  <td className="px-6 py-4 font-semibold text-slate-900 text-sm">
                     {c.nome} {c.cognome}
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-slate-500">
                     {c.email || "—"}
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-slate-500">
                     {c.telefono || "—"}
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-500 font-mono">
+                  <td className="px-6 py-4 text-sm text-slate-500 font-mono">
                     {c.codiceFiscale || "—"}
                   </td>
-                  <td className="px-6 py-3 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-slate-500">
                     {c.createdAt ? formatDate(c.createdAt) : "—"}
                   </td>
                 </tr>

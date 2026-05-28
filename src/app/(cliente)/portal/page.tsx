@@ -3,7 +3,12 @@ import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/db";
 import { pratiche, documenti, clienti } from "@/db/schema";
 import { eq, and, desc } from "drizzle-orm";
-import { statoLabels, statoColors, formatDate, formatFileSize } from "@/lib/utils";
+import {
+  statoLabels,
+  statoColors,
+  formatDate,
+  formatFileSize,
+} from "@/lib/utils";
 import Link from "next/link";
 import { ClientePortalHeader } from "./ClientePortalHeader";
 
@@ -34,30 +39,45 @@ export default async function ClientePortalPage() {
     : [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <ClientePortalHeader userName={user.name} />
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 rounded-2xl p-6 text-white shadow-sm">
+          <h1 className="text-2xl font-bold tracking-tight">
             Benvenuto, {user.name}
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-indigo-100 mt-1">
             Qui puoi consultare le tue pratiche e i documenti condivisi
           </p>
         </div>
 
         {userPratiche.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-            <svg className="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <p className="mt-4 text-gray-500">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-16 text-center">
+            <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-indigo-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <p className="text-slate-500 font-medium">
               Non hai ancora pratiche assegnate
+            </p>
+            <p className="text-sm text-slate-400 mt-1">
+              Le tue pratiche appariranno qui quando saranno create
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {userPratiche.map((p) => (
               <PraticaCard key={p.id} pratica={p} />
             ))}
@@ -68,7 +88,18 @@ export default async function ClientePortalPage() {
   );
 }
 
-async function PraticaCard({ pratica }: { pratica: { id: number; titolo: string; descrizione: string | null; stato: string | null; indirizzo: string | null; createdAt: Date | null } }) {
+async function PraticaCard({
+  pratica,
+}: {
+  pratica: {
+    id: number;
+    titolo: string;
+    descrizione: string | null;
+    stato: string | null;
+    indirizzo: string | null;
+    createdAt: Date | null;
+  };
+}) {
   const docs = await db
     .select({
       id: documenti.id,
@@ -86,24 +117,43 @@ async function PraticaCard({ pratica }: { pratica: { id: number; titolo: string;
     );
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden hover:shadow-md transition-shadow duration-200">
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
             <Link
               href={`/portal/pratiche/${pratica.id}`}
-              className="text-lg font-semibold text-gray-900 hover:text-blue-600"
+              className="text-lg font-semibold text-slate-900 hover:text-indigo-600 transition-colors"
             >
               {pratica.titolo}
             </Link>
-            <div className="flex items-center gap-3 mt-1">
+            <div className="flex flex-wrap items-center gap-2 mt-2">
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statoColors[pratica.stato || "aperta"]}`}
+                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${statoColors[pratica.stato || "aperta"]}`}
               >
                 {statoLabels[pratica.stato || "aperta"]}
               </span>
               {pratica.indirizzo && (
-                <span className="text-sm text-gray-400">
+                <span className="flex items-center gap-1 text-sm text-slate-400">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
                   {pratica.indirizzo}
                 </span>
               )}
@@ -111,36 +161,68 @@ async function PraticaCard({ pratica }: { pratica: { id: number; titolo: string;
           </div>
           <Link
             href={`/portal/pratiche/${pratica.id}`}
-            className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+            className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
           >
-            Dettaglio →
+            Dettaglio
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </Link>
         </div>
 
         {docs.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-xs font-medium text-gray-500 uppercase mb-2">
+          <div className="mt-5 pt-4 border-t border-slate-100">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
               Documenti condivisi ({docs.length})
             </p>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {docs.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between py-1.5">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm text-gray-700">{doc.nome}</span>
-                    {doc.dimensione && (
-                      <span className="text-xs text-gray-400">
-                        ({formatFileSize(doc.dimensione)})
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-50 transition-colors group"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                      <svg
+                        className="w-4 h-4 text-indigo-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-sm text-slate-700 truncate block">
+                        {doc.nome}
                       </span>
-                    )}
+                      {doc.dimensione && (
+                        <span className="text-xs text-slate-400">
+                          {formatFileSize(doc.dimensione)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <a
                     href={`/uploads/${doc.filename}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                    className="flex-shrink-0 text-sm text-indigo-600 hover:text-indigo-700 font-medium opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     Scarica
                   </a>

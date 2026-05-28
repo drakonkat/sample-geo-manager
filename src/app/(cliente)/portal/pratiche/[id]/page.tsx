@@ -4,7 +4,12 @@ import { db } from "@/db";
 import { pratiche, documenti, clienti, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { statoLabels, statoColors, formatDate, formatFileSize } from "@/lib/utils";
+import {
+  statoLabels,
+  statoColors,
+  formatDate,
+  formatFileSize,
+} from "@/lib/utils";
 import Link from "next/link";
 import { ClientePortalHeader } from "../../ClientePortalHeader";
 
@@ -44,7 +49,15 @@ export default async function ClientePraticaDetailPage({
     .from(clienti)
     .where(eq(clienti.userId, user.id));
 
-  if (!cliente || !(await db.select().from(pratiche).where(and(eq(pratiche.id, praticaId), eq(pratiche.clienteId, cliente.id))))[0]) {
+  if (
+    !cliente ||
+    !(await db
+      .select()
+      .from(pratiche)
+      .where(
+        and(eq(pratiche.id, praticaId), eq(pratiche.clienteId, cliente.id))
+      ))[0]
+  ) {
     notFound();
   }
 
@@ -65,21 +78,36 @@ export default async function ClientePraticaDetailPage({
     );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <ClientePortalHeader userName={user.name} />
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex items-center gap-3">
-          <Link href="/portal" className="text-gray-400 hover:text-gray-600">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <div className="flex items-start gap-4">
+          <Link
+            href="/portal"
+            className="mt-1 flex items-center justify-center w-9 h-9 rounded-xl bg-white shadow-sm border border-slate-200/60 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{pratica.titolo}</h1>
-            <div className="flex items-center gap-3 mt-1">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              {pratica.titolo}
+            </h1>
+            <div className="flex items-center gap-2 mt-2">
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statoColors[pratica.stato || "aperta"]}`}
+                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ring-1 ring-inset ${statoColors[pratica.stato || "aperta"]}`}
               >
                 {statoLabels[pratica.stato || "aperta"]}
               </span>
@@ -87,77 +115,166 @@ export default async function ClientePraticaDetailPage({
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Dettagli</h2>
-          <dl className="grid grid-cols-2 gap-4 text-sm">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-6">
+          <h2 className="font-semibold text-slate-900 mb-5 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-indigo-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            Dettagli
+          </h2>
+          <dl className="grid grid-cols-2 gap-5 text-sm">
             {pratica.indirizzo && (
-              <div>
-                <dt className="text-gray-500">Indirizzo</dt>
-                <dd className="text-gray-900 mt-0.5">{pratica.indirizzo}</dd>
+              <div className="bg-slate-50 rounded-xl p-3">
+                <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  Indirizzo
+                </dt>
+                <dd className="text-slate-900 font-medium mt-1">
+                  {pratica.indirizzo}
+                </dd>
               </div>
             )}
             {pratica.foglio && (
-              <div>
-                <dt className="text-gray-500">Foglio</dt>
-                <dd className="text-gray-900 mt-0.5">{pratica.foglio}</dd>
+              <div className="bg-slate-50 rounded-xl p-3">
+                <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  Foglio
+                </dt>
+                <dd className="text-slate-900 font-medium mt-1">
+                  {pratica.foglio}
+                </dd>
               </div>
             )}
             {pratica.particella && (
-              <div>
-                <dt className="text-gray-500">Particella</dt>
-                <dd className="text-gray-900 mt-0.5">{pratica.particella}</dd>
+              <div className="bg-slate-50 rounded-xl p-3">
+                <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  Particella
+                </dt>
+                <dd className="text-slate-900 font-medium mt-1">
+                  {pratica.particella}
+                </dd>
               </div>
             )}
             {pratica.sub && (
-              <div>
-                <dt className="text-gray-500">Sub</dt>
-                <dd className="text-gray-900 mt-0.5">{pratica.sub}</dd>
+              <div className="bg-slate-50 rounded-xl p-3">
+                <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  Sub
+                </dt>
+                <dd className="text-slate-900 font-medium mt-1">
+                  {pratica.sub}
+                </dd>
               </div>
             )}
-            <div>
-              <dt className="text-gray-500">Geometra</dt>
-              <dd className="text-gray-900 mt-0.5">{pratica.geometraNome || "—"}</dd>
+            <div className="bg-slate-50 rounded-xl p-3">
+              <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Geometra
+              </dt>
+              <dd className="text-slate-900 font-medium mt-1">
+                {pratica.geometraNome || "\u2014"}
+              </dd>
             </div>
-            <div>
-              <dt className="text-gray-500">Data</dt>
-              <dd className="text-gray-900 mt-0.5">
-                {pratica.createdAt ? formatDate(pratica.createdAt) : "—"}
+            <div className="bg-slate-50 rounded-xl p-3">
+              <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Data
+              </dt>
+              <dd className="text-slate-900 font-medium mt-1">
+                {pratica.createdAt ? formatDate(pratica.createdAt) : "\u2014"}
               </dd>
             </div>
           </dl>
           {pratica.descrizione && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <dt className="text-gray-500 text-sm">Descrizione</dt>
-              <dd className="text-gray-900 text-sm mt-1">{pratica.descrizione}</dd>
+            <div className="mt-5 pt-5 border-t border-slate-100">
+              <dt className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                Descrizione
+              </dt>
+              <dd className="text-slate-700 text-sm mt-2 leading-relaxed">
+                {pratica.descrizione}
+              </dd>
             </div>
           )}
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-6">
+          <h2 className="font-semibold text-slate-900 mb-5 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-indigo-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
             Documenti Condivisi ({docs.length})
           </h2>
           {docs.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-4">
-              Nessun documento condiviso
-            </p>
+            <div className="text-center py-8">
+              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+                <svg
+                  className="w-6 h-6 text-slate-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm text-slate-400">
+                Nessun documento condiviso
+              </p>
+            </div>
           ) : (
             <div className="space-y-2">
               {docs.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-indigo-50/50 transition-colors group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200/60 flex-shrink-0">
+                      <svg
+                        className="w-5 h-5 text-indigo-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        />
                       </svg>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{doc.nome}</p>
-                      <p className="text-xs text-gray-400">
-                        {doc.dimensione ? formatFileSize(doc.dimensione) : ""}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-slate-900 truncate">
+                        {doc.nome}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {doc.dimensione
+                          ? formatFileSize(doc.dimensione)
+                          : ""}
                       </p>
                     </div>
                   </div>
@@ -165,8 +282,21 @@ export default async function ClientePraticaDetailPage({
                     href={`/uploads/${doc.filename}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                    className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                   >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
                     Scarica
                   </a>
                 </div>

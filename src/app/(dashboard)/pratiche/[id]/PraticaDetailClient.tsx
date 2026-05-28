@@ -84,19 +84,19 @@ export function PraticaDetailClient({
   const canEdit = userRole === "admin" || userRole === "geometra";
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
+    <div className="max-w-5xl mx-auto space-y-8">
+      <div className="flex items-center gap-4">
         <Link
           href="/pratiche"
-          className="text-gray-400 hover:text-gray-600"
+          className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-200/60 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{pratica.titolo}</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <h1 className="text-3xl font-bold text-slate-900">{pratica.titolo}</h1>
+          <p className="text-slate-500 text-sm mt-1">
             Creata il {pratica.createdAt ? formatDate(pratica.createdAt) : "—"}
           </p>
         </div>
@@ -104,59 +104,62 @@ export function PraticaDetailClient({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Dettagli</h2>
-            <dl className="grid grid-cols-2 gap-4 text-sm">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
+            <h2 className="text-lg font-semibold text-slate-900 mb-6">Dettagli</h2>
+            <div className="grid grid-cols-2 gap-6">
               {pratica.indirizzo && (
                 <div>
-                  <dt className="text-gray-500">Indirizzo</dt>
-                  <dd className="text-gray-900 mt-0.5">{pratica.indirizzo}</dd>
+                  <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Indirizzo</p>
+                  <p className="text-slate-900 font-semibold text-sm">{pratica.indirizzo}</p>
                 </div>
               )}
               {pratica.foglio && (
                 <div>
-                  <dt className="text-gray-500">Foglio</dt>
-                  <dd className="text-gray-900 mt-0.5">{pratica.foglio}</dd>
+                  <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Foglio</p>
+                  <p className="text-slate-900 font-semibold text-sm">{pratica.foglio}</p>
                 </div>
               )}
               {pratica.particella && (
                 <div>
-                  <dt className="text-gray-500">Particella</dt>
-                  <dd className="text-gray-900 mt-0.5">{pratica.particella}</dd>
+                  <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Particella</p>
+                  <p className="text-slate-900 font-semibold text-sm">{pratica.particella}</p>
                 </div>
               )}
               {pratica.sub && (
                 <div>
-                  <dt className="text-gray-500">Sub</dt>
-                  <dd className="text-gray-900 mt-0.5">{pratica.sub}</dd>
+                  <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Sub</p>
+                  <p className="text-slate-900 font-semibold text-sm">{pratica.sub}</p>
                 </div>
               )}
               <div>
-                <dt className="text-gray-500">Geometra</dt>
-                <dd className="text-gray-900 mt-0.5">{pratica.geometraNome || "—"}</dd>
+                <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Geometra</p>
+                <p className="text-slate-900 font-semibold text-sm">{pratica.geometraNome || "—"}</p>
               </div>
               <div>
-                <dt className="text-gray-500">Cliente</dt>
-                <dd className="text-gray-900 mt-0.5">
+                <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-1">Cliente</p>
+                <p className="text-slate-900 font-semibold text-sm">
                   {pratica.clienteNome
                     ? `${pratica.clienteNome} ${pratica.clienteCognome}`
                     : "—"}
-                </dd>
+                </p>
               </div>
-            </dl>
+            </div>
             {pratica.descrizione && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <dt className="text-gray-500 text-sm">Descrizione</dt>
-                <dd className="text-gray-900 text-sm mt-1">
+              <div className="mt-6 pt-6 border-t border-slate-100">
+                <p className="text-slate-500 text-xs uppercase tracking-wide font-medium mb-2">Descrizione</p>
+                <p className="text-slate-700 text-sm leading-relaxed">
                   {pratica.descrizione}
-                </dd>
+                </p>
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">
-              Documenti ({docList.length})
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
+            <h2 className="text-lg font-semibold text-slate-900 mb-6">
+              Documenti
+              <span className="ml-2 inline-flex items-center justify-center px-2.5 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-600 rounded-full">
+                {docList.length}
+              </span>
             </h2>
             {canEdit && (
               <div className="mb-6">
@@ -167,31 +170,36 @@ export function PraticaDetailClient({
               </div>
             )}
             {docList.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-4">
-                Nessun documento caricato
-              </p>
+              <div className="text-center py-10">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-3">
+                  <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-slate-500 text-sm">Nessun documento caricato</p>
+              </div>
             ) : (
               <div className="space-y-2">
                 {docList.map((doc) => (
                   <div
                     key={doc.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-indigo-50/50 transition-colors group"
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-100 transition-colors">
+                        <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-semibold text-slate-900 truncate">
                           {doc.nome}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-slate-400 mt-0.5">
                           {doc.dimensione ? formatFileSize(doc.dimensione) : ""}{" "}
                           {doc.caricatoDa && `• ${doc.caricatoDa}`}
                           {doc.visibileAlCliente && (
-                            <span className="ml-2 text-green-600">
+                            <span className="ml-2 text-emerald-600 font-medium">
                               ✓ Visibile al cliente
                             </span>
                           )}
@@ -203,14 +211,17 @@ export function PraticaDetailClient({
                         href={`/uploads/${doc.filename}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-500 text-sm font-medium"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
                       >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
                         Scarica
                       </a>
                       {canEdit && (
                         <button
                           onClick={() => deleteDoc(doc.id)}
-                          className="text-red-400 hover:text-red-600 ml-2"
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -227,36 +238,41 @@ export function PraticaDetailClient({
 
         {canEdit && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-semibold text-gray-900 mb-4">Aggiorna</h2>
-              <div className="space-y-4">
-                <Select
-                  label="Stato"
-                  value={stato}
-                  onChange={(e) => setStato(e.target.value)}
-                  options={[
-                    { value: "aperta", label: "Aperta" },
-                    { value: "in_corso", label: "In Corso" },
-                    { value: "sospesa", label: "Sospesa" },
-                    { value: "chiusa", label: "Chiusa" },
-                  ]}
-                />
-                <Select
-                  label="Cliente"
-                  value={clienteId}
-                  onChange={(e) => setClienteId(e.target.value)}
-                  options={[
-                    { value: "", label: "Nessuno" },
-                    ...allClienti.map((c) => ({
-                      value: String(c.id),
-                      label: `${c.nome} ${c.cognome}`,
-                    })),
-                  ]}
-                />
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8">
+              <h2 className="text-lg font-semibold text-slate-900 mb-6">Aggiorna</h2>
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Stato</label>
+                  <select
+                    value={stato}
+                    onChange={(e) => setStato(e.target.value)}
+                    className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                  >
+                    <option value="aperta">Aperta</option>
+                    <option value="in_corso">In Corso</option>
+                    <option value="sospesa">Sospesa</option>
+                    <option value="chiusa">Chiusa</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Cliente</label>
+                  <select
+                    value={clienteId}
+                    onChange={(e) => setClienteId(e.target.value)}
+                    className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all outline-none"
+                  >
+                    <option value="">Nessuno</option>
+                    {allClienti.map((c) => (
+                      <option key={c.id} value={String(c.id)}>
+                        {c.nome} {c.cognome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <Button
                   onClick={updateStato}
                   loading={saving}
-                  className="w-full"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 rounded-xl py-2.5"
                 >
                   Salva Modifiche
                 </Button>

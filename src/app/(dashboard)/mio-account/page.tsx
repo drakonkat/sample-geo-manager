@@ -8,31 +8,44 @@ export default async function MioAccountPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Il Mio Account</h1>
-        <p className="text-gray-500 mt-1">Gestisci le impostazioni del tuo profilo</p>
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          Il Mio Account
+        </h1>
+        <p className="text-slate-500 mt-1">
+          Gestisci le impostazioni del tuo profilo
+        </p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xl font-bold">
-            {user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+        <div className="h-24 bg-gradient-to-r from-indigo-600 to-indigo-500" />
+        <div className="px-6 pb-6">
+          <div className="flex items-end gap-5 -mt-10">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-2xl font-bold text-white shadow-lg ring-4 ring-white">
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </div>
+            <div className="pb-1">
+              <h2 className="text-xl font-semibold text-slate-900">
+                {user.name}
+              </h2>
+              <p className="text-sm text-slate-500">{user.email}</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">{user.name}</h2>
-            <p className="text-gray-500">{user.email}</p>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+          <div className="mt-4">
+            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-100 text-indigo-700 ring-1 ring-inset ring-indigo-600/20">
               {roleLabels[user.role]}
             </span>
           </div>
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            <AccountForm user={user} />
+          </div>
         </div>
-        <AccountForm user={user} />
       </div>
     </div>
   );

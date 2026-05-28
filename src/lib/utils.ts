@@ -28,10 +28,10 @@ export const statoLabels: Record<string, string> = {
 };
 
 export const statoColors: Record<string, string> = {
-  aperta: "bg-blue-100 text-blue-800",
-  in_corso: "bg-yellow-100 text-yellow-800",
-  sospesa: "bg-gray-100 text-gray-800",
-  chiusa: "bg-green-100 text-green-800",
+  aperta: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
+  in_corso: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+  sospesa: "bg-slate-50 text-slate-700 ring-1 ring-slate-600/20",
+  chiusa: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20",
 };
 
 export const roleLabels: Record<string, string> = {

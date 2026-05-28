@@ -1,12 +1,7 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f9fafb;
-  --foreground: #111827;
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  min-height: 100vh;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

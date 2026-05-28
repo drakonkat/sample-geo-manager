@@ -44,17 +44,20 @@ export function Sidebar({ user }: SidebarProps) {
   );
 
   return (
-    <aside className="hidden lg:flex lg:flex-col w-64 bg-gray-900 min-h-screen">
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-800">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+    <aside className="hidden lg:flex lg:flex-col w-64 bg-slate-950 min-h-screen">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800/60 bg-gradient-to-b from-slate-900 to-slate-950">
+        <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-600/20">
           <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
         </div>
-        <span className="text-white font-semibold text-lg">GeoGest</span>
+        <div className="flex items-center gap-2">
+          <span className="text-white font-semibold text-lg tracking-tight">GeoGest</span>
+          <span className="text-[10px] font-semibold text-indigo-400 bg-indigo-500/15 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Pro</span>
+        </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-5 space-y-1">
         {filteredItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
@@ -63,14 +66,14 @@ export function Sidebar({ user }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border-l-2",
                 isActive
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  ? "bg-slate-800/80 text-white border-indigo-500"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50 border-transparent"
               )}
             >
               <svg
-                className="w-5 h-5 shrink-0"
+                className={cn("w-5 h-5 shrink-0", isActive ? "text-indigo-400" : "text-slate-500")}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -88,17 +91,17 @@ export function Sidebar({ user }: SidebarProps) {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-gray-800">
+      <div className="px-3 py-4 border-t border-slate-800/60">
         <Link
           href="/mio-account"
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border-l-2",
             pathname === "/mio-account"
-              ? "bg-blue-600 text-white"
-              : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              ? "bg-slate-800/80 text-white border-indigo-500"
+              : "text-slate-400 hover:text-white hover:bg-slate-800/50 border-transparent"
           )}
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={cn("w-5 h-5", pathname === "/mio-account" ? "text-indigo-400" : "text-slate-500")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
