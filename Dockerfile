@@ -9,6 +9,7 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_OUTPUT_MODE=standalone
 RUN bun run build
 
 FROM base AS runner
@@ -29,4 +30,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["bun", "run", "server.js"]
+CMD ["bun", "run", "start"]
